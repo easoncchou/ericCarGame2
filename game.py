@@ -1,5 +1,6 @@
 import pygame
 
+
 class Game:
     """
     Game class containing the game loop
@@ -23,9 +24,6 @@ class Game:
         self.clock = pygame.time.Clock()
 
         # can set title later
-
-
-
 
     def run_game_loop(self) -> None:
         """
