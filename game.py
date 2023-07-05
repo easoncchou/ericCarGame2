@@ -1,5 +1,7 @@
 import pygame
 
+from car import *
+
 
 class Game:
     """
@@ -10,6 +12,8 @@ class Game:
     """
 
     done: bool
+    size: tuple[int, int]
+    cars: list[Car]
 
     def __init__(self, width: int, height: int) -> None:
         """
@@ -23,7 +27,19 @@ class Game:
         self.screen = pygame.display.set_mode(self.size)
         self.clock = pygame.time.Clock()
 
+        self.cars = []
+
         # can set title later
+
+    def add_car(self, car: Car) -> None:
+        """
+        Adds a car to self.cars
+
+        :param car: Car to add
+        :return:
+        """
+
+        self.cars.append(car)
 
     def run_game_loop(self) -> None:
         """
@@ -33,14 +49,20 @@ class Game:
         """
 
         while not self.done:
-            # event handler
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.done = True
-
             # render
             self.screen.fill((255, 255, 255))
+            for car in self.cars:
+                car.sprite.update()
 
             # update display
             pygame.display.flip()
             self.clock.tick(60)
+
+
+class Sprite(pygame.sprite.Sprite):
+    def __init__(self, w: int, h: int, color: tuple[int, int, int]):
+        # Call superclass constructor
+        super().__init__()
+
+        self.image = pygame.Surface([w, h])
+        self.image.fill(color)
