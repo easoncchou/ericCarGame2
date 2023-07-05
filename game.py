@@ -33,7 +33,12 @@ class Game:
         """
 
         while not self.done:
-            # fill the screen
+            # event handler
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.done = True
+
+            # render
             self.screen.fill((255, 255, 255))
 
             # update display
