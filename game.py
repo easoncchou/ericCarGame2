@@ -26,6 +26,7 @@ class Game:
         self.size = (width, height)
         self.screen = pygame.display.set_mode(self.size)
         self.clock = pygame.time.Clock()
+        self.all_sprites_group = pygame.sprite.Group()
 
         self.cars = []
 
@@ -40,6 +41,7 @@ class Game:
         """
 
         self.cars.append(car)
+        self.all_sprites_group.add(car.sprite)
 
     def run_game_loop(self) -> None:
         """
@@ -49,20 +51,16 @@ class Game:
         """
 
         while not self.done:
+            # handle events
+            for events in pygame.event.get():
+                if events.type == pygame.QUIT:
+                    self.done = True
+
             # render
             self.screen.fill((255, 255, 255))
-            for car in self.cars:
-                car.sprite.update()
+            self.all_sprites_group.update()
+            self.all_sprites_group.draw(self.screen)
 
             # update display
             pygame.display.flip()
             self.clock.tick(60)
-
-
-class Sprite(pygame.sprite.Sprite):
-    def __init__(self, w: int, h: int, color: tuple[int, int, int]):
-        # Call superclass constructor
-        super().__init__()
-
-        self.image = pygame.Surface([w, h])
-        self.image.fill(color)
