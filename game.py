@@ -18,6 +18,9 @@ class Game:
     def __init__(self, width: int, height: int) -> None:
         """
         Initializer
+
+        :param width: width of the screen
+        :param height: height of the screen
         """
 
         pygame.init()
@@ -37,7 +40,7 @@ class Game:
         Adds a car to self.cars
 
         :param car: Car to add
-        :return:
+        :return: None
         """
 
         self.cars.append(car)
@@ -47,14 +50,29 @@ class Game:
         """
         Runs the game loop
 
-        :return:
+        :return: None
         """
 
         while not self.done:
             # handle events
-            for events in pygame.event.get():
-                if events.type == pygame.QUIT:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
                     self.done = True
+
+            # handle keyboard
+            #   better to handle this way to account for holding down key
+            #   presses
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_UP]:
+                self.cars[0].apply_force((0, 0), 2000, 1.6)
+                # TODO change from cars[0]
+            if keys[pygame.K_DOWN]:
+                self.cars[0].apply_force((0, 0), -2000, 1.6)
+
+            # update cars
+            for car in self.cars:
+                car.update_pos()
+                car.update_sprite()
 
             # render
             self.screen.fill((255, 255, 255))
