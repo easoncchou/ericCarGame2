@@ -75,7 +75,7 @@ class Game:
                 car.update_sprite()
 
             # render
-            self.screen.fill((255, 255, 255))
+            self.screen.fill(WHITE)
             self.all_sprites_group.update()
             self.all_sprites_group.draw(self.screen)
 

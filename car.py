@@ -31,7 +31,7 @@ class Car(PhysicsObject):
         """
 
         super().__init__(mass, moi, size, pivot)
-        self.sprite = Sprite(size[0], size[1], (0, 0), (0, 0, 0))
+        self.sprite = Sprite(size[0], size[1], (0, 0), BLACK)
 
     def update_sprite(self) -> None:
         """
