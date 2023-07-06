@@ -1,6 +1,7 @@
 from constants import *
 import math
 
+
 class PhysicsObject:
     """
     Any rectangular object with physics
