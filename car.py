@@ -12,7 +12,7 @@ class Car(PhysicsObject):
     mass: int
     moi: int
     size: tuple[int, int]
-    pivot: tuple[int, int]
+    lever_arm: int
     pos: list[int, int]
     vel: float
     a_pos: float
@@ -20,17 +20,17 @@ class Car(PhysicsObject):
     sprite: Sprite
 
     def __init__(self, mass: int, moi: int,
-                 size: tuple[int, int], pivot: tuple[int, int]) -> None:
+                 size: tuple[int, int], lever_arm: int) -> None:
         """
         Initializer
 
         :param mass: mass of the car
         :param moi: moment of inertia of the car
         :param size: size of the car
-        :param pivot: pivot point of the car
+        :param lever_arm: length of the lever arm of the car
         """
 
-        super().__init__(mass, moi, size, pivot)
+        super().__init__(mass, moi, size, lever_arm)
         self.sprite = Sprite(size[0], size[1], (0, 0), BLACK)
 
     def update_sprite(self) -> None:
@@ -41,3 +41,4 @@ class Car(PhysicsObject):
         """
         self.sprite.rect.x = self.pos[0]
         self.sprite.rect.y = self.pos[1]
+        # TODO: update the rotation of the sprite using pygame.transform.rotate, which apparently makes copy of image
