@@ -13,7 +13,6 @@ class PhysicsObject:
     pos: list[int, int]
     vel: float
     a_pos: float
-    a_vel: float
 
     def __init__(self, mass: int, size: tuple[int, int], handling) -> None:
         """
@@ -32,7 +31,6 @@ class PhysicsObject:
         self.vel = 0            # tangential velocity
 
         self.a_pos = math.pi          # angular position in radians; positive is CCW
-        self.a_vel = 0          # angular velocity; positive is CCW
 
     def apply_force_tan(self, magnitude: int, direction: float) -> None:
         """
@@ -63,14 +61,17 @@ class PhysicsObject:
         """
 
         # calculate the angular velocity
-        self.a_vel = self.vel * magnitude / 100000 * (self.handling / 2)
+        a_vel = self.vel * magnitude / 100000 * (self.handling / 2)
 
-        if self.a_vel >= MAX_A_SPEED:
-            self.a_vel = MAX_A_SPEED
+        if a_vel >= MAX_A_SPEED:
+            a_vel = MAX_A_SPEED
 
         #   determine the direction of normal acceleration
         if direction == 0:
-            self.a_vel *= -1
+            a_vel *= -1
+
+        # update the angular position
+        self.a_pos += a_vel * (1 / TICKRATE)
 
     def update_pos(self) -> None:
         """
@@ -78,9 +79,13 @@ class PhysicsObject:
 
         :return: None
         """
+        # friction; the car will passively slow down until it stops moving
+        if abs(self.vel) > 0.5:
+            self.vel -= (self.vel / abs(self.vel)) * 0.5
+
         self.pos[0] += (self.vel * math.sin(self.a_pos)) * (1 / TICKRATE)
         self.pos[1] += (self.vel * math.cos(self.a_pos)) * (1 / TICKRATE)
-        self.a_pos += self.a_vel * (1 / TICKRATE)
+
 
 
 
