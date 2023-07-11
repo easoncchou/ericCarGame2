@@ -21,6 +21,7 @@ class Sprite(pygame.sprite.Sprite):
 
         self.image = pygame.Surface([w, h])
         self.image.fill(color)
+        self.image = self.image.convert_alpha()
 
         self.rect = self.image.get_rect()
         self.rect.x = pos[0]
