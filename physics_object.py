@@ -32,15 +32,15 @@ class PhysicsObject:
         self.size = size
         self.lever_arm = lever_arm      # how well a car turns; used for angular calculations
 
-        self.pos = [0, 0]       # (x, y)
+        self.pos = [100, 100]       # (x, y)
         self.vel = 0            # tangential velocity
 
         self.a_pos = 0          # angular position in degrees; positive is CCW
         self.a_vel = 0          # angular velocity; positive is CCW
 
-    def apply_force(self, magnitude: int, direction: float) -> None:
+    def apply_force_tan(self, magnitude: int, direction: float) -> None:
         """
-        Applies a force relative to this PhysicsObject and updates the velocity
+        Applies a force relative to this PhysicsObject and updates the velocity in the tangential direction
 
         :param magnitude: magnitude of the force
         :param direction: direction of the force
@@ -53,6 +53,15 @@ class PhysicsObject:
         # calculate velocity
         #   tangential only - normal velocity is always 0 by definition
         self.vel += acc * (1 / TICKRATE)
+
+    def apply_force_norm(self, magnitude: int, direction: float) -> None:
+        """
+        Applies a force relative to this PhysicsObject and updates the velocity in the normal direction
+
+        :param magnitude: magnitude of the force
+        :param direction: direction of the force
+        :return: None
+        """
 
         # calculate normal acceleration
         #   calculate the magnitude of the angular acceleration

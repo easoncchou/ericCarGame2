@@ -41,4 +41,4 @@ class Car(PhysicsObject):
         """
         self.sprite.rect.x = self.pos[0]
         self.sprite.rect.y = self.pos[1]
-        # TODO: update the rotation of the sprite using pygame.transform.rotate, which apparently makes copy of image
+        self.sprite.image = pygame.transform.rotate(self.sprite.original_image, ((180 / math.pi) * self.a_pos))
