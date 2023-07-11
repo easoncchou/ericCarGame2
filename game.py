@@ -69,9 +69,9 @@ class Game:
             if keys[pygame.K_DOWN]:
                 self.cars[0].apply_force_tan(-2000, 1.6)
             if keys[pygame.K_RIGHT]:
-                self.cars[0].apply_force_norm(1000, 0)
+                self.cars[0].steer_car(500, 0)
             if keys[pygame.K_LEFT]:
-                self.cars[0].apply_force_norm(1000, 180)
+                self.cars[0].steer_car(500, 180)
 
             # update cars
             for car in self.cars:
