@@ -49,7 +49,7 @@ class PhysicsObject:
         self.vel += acc * (1 / TICKRATE)
 
         if abs(self.vel) >= MAX_SPEED:
-            self.vel = self.vel / abs(self.vel) * MAX_SPEED
+            self.vel = math.copysign(MAX_SPEED, self.vel)
 
     def steer_car(self, magnitude: int, direction: float) -> None:
         """
@@ -81,7 +81,7 @@ class PhysicsObject:
         """
         # friction; the car will passively slow down until it stops moving
         if abs(self.vel) > 0.5:
-            self.vel -= (self.vel / abs(self.vel)) * 0.5
+            self.vel -= math.copysign(0.5, self.vel)
 
         self.pos[0] += (self.vel * math.sin(self.a_pos)) * (1 / TICKRATE)
         self.pos[1] += (self.vel * math.cos(self.a_pos)) * (1 / TICKRATE)
