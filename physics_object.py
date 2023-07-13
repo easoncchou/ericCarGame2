@@ -73,6 +73,29 @@ class PhysicsObject:
         # update the angular position
         self.a_pos += a_vel * (1 / TICKRATE)
 
+    def check_wall_collision(self, w: int, h: int) -> None:
+        """
+        Check if the car is in contact with the edge of the window/map and stop the car if it is
+
+        NOTE: REMEMBER TO CALL IT BEFORE UPDATE POS, WHICH USES VELOCITY (IN GAME.PY)
+
+        :return: None
+        """
+        # check if the car has hit the edge of the window, and if it has then change the velocity to zero
+        if (self.pos[0] - (w // 2)) < 0:
+            self.pos[0] = 1 + (w // 2)
+            self.vel = 0
+        elif (self.pos[0] + (w / 2)) > MAP_WIDTH:
+            self.pos[0] = MAP_WIDTH - 1 - (w // 2)
+            self.vel = 0
+
+        if (self.pos[1] - (h // 2)) < 0:
+            self.pos[1] = 1 + (h // 2)
+            self.vel = 0
+        elif (self.pos[1] + (h / 2)) > MAP_HEIGHT:
+            self.pos[1] = MAP_HEIGHT - 1 - (h // 2)
+            self.vel = 0
+
     def update_pos(self) -> None:
         """
         Updates the position of the object
@@ -85,6 +108,8 @@ class PhysicsObject:
 
         self.pos[0] += (self.vel * math.sin(self.a_pos)) * (1 / TICKRATE)
         self.pos[1] += (self.vel * math.cos(self.a_pos)) * (1 / TICKRATE)
+
+
 
 
 

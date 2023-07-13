@@ -27,7 +27,7 @@ class Car(PhysicsObject):
         """
 
         super().__init__(mass, size, handling)
-        self.sprite = Sprite(size[0], size[1], (0, 0), BLACK)
+        self.sprite = Sprite(size[0], size[1], (0, 0), "assets/car1.png")
 
     def update_sprite(self) -> None:
         """

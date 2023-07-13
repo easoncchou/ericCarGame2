@@ -75,6 +75,7 @@ class Game:
 
             # update cars
             for car in self.cars:
+                car.check_wall_collision(car.sprite.rect.w, car.sprite.rect.h)
                 car.update_pos()
                 car.update_sprite()
 
