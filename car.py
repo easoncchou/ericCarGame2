@@ -37,7 +37,5 @@ class Car(PhysicsObject):
         """
 
         self.sprite.image = pygame.transform.rotate(self.sprite.original_image, ((180 / math.pi) * self.a_pos))
-
-        self.sprite.rect.x = self.pos[0]
-        self.sprite.rect.y = self.pos[1]
+        self.sprite.rect = self.sprite.image.get_rect(center=self.sprite.image.get_rect(center=(self.pos[0], self.pos[1])).center)
 
