@@ -86,6 +86,11 @@ class Game:
             polygon_vertices = list(self.cars[0].poly.exterior.coords)
             pygame.draw.polygon(self.screen, RED, polygon_vertices)
 
+            # debug speedometer todo remove later
+            font = pygame.font.SysFont(None, 48)
+            img = font.render(str(round(self.cars[0].vel, 1)), True, BLUE)
+            self.screen.blit(img, (MAP_WIDTH - 120, MAP_HEIGHT - 80))
+
             self.all_sprites_group.update()
             self.all_sprites_group.draw(self.screen)
 

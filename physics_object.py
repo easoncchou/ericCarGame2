@@ -134,7 +134,3 @@ def is_collide(obj1: PhysicsObject, obj2: PhysicsObject) -> bool:
     """
 
     return obj1.poly.intersects(obj2.poly)
-
-
-
-
