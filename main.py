@@ -9,5 +9,5 @@ if __name__ == '__main__':
         car_image,
         (40, 75),
     )
-    game.add_car(Car(20, (40, 75), [100, 100], 200, 2000, 100, 2, car_image))
+    game.add_car(Car(20, [100, 100], 200, 2000, 100, 2, car_image))
     game.run_game_loop()

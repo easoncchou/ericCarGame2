@@ -17,30 +17,27 @@ class Car(PhysicsObject):
     a_vel: float
     sprite: Sprite
 
-    def __init__(self, mass: int, size: tuple[int, int], pos: list[int, int], max_speed: int,
+    def __init__(self, mass: int, pos: list[int], max_speed: int,
                  acceleration: int, max_a_speed: int, handling: int, image: pygame.image, poly=None) -> None:
         """
         Initializer
 
         :param mass: mass of the car
-        :param size: size of the car
         :param handling: how well a car steers/turns (the higher the value the faster it turns)
         :param poly: polygon representing the shape of the car, rectangle by default
         """
 
-        self.sprite = Sprite(size[0], size[1], image)
+        self.sprite = Sprite((pos[0], pos[1]), image)
         self.max_a_speed = max_a_speed
         self.handling = handling
 
         # if poly is None, create polygon from rect
         if poly is None:
-            corners = [
-                (self.sprite.rect.topleft[0] + pos[0], self.sprite.rect.topleft[1] + pos[1]),
-                (self.sprite.rect.topright[0] + pos[0], self.sprite.rect.topright[1] + pos[1]),
-                (self.sprite.rect.bottomright[0] + pos[0], self.sprite.rect.bottomright[1] + pos[1]),
-                (self.sprite.rect.bottomleft[0] + pos[0], self.sprite.rect.bottomleft[1] + pos[1])
-            ]
-            poly = Polygon(corners)
+            vertices = [self.sprite.rect.topleft,
+                        self.sprite.rect.topright,
+                        self.sprite.rect.bottomright,
+                        self.sprite.rect.bottomleft]
+            poly = Polygon(vertices)
 
         super().__init__(mass, max_speed, acceleration, pos, poly)
 

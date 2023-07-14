@@ -10,10 +10,8 @@ class Sprite(pygame.sprite.Sprite):
         """
         Initializer
 
-        :param w: width
-        :param h: height
         :param pos: position (x, y)
-        :param image_path: image path
+        :param image: image
         """
         # Call superclass constructor
         super().__init__()
