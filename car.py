@@ -18,7 +18,7 @@ class Car(PhysicsObject):
     sprite: Sprite
 
     def __init__(self, mass: int, size: tuple[int, int], pos: list[int, int], max_speed: int,
-                 acceleration: int, max_a_speed: int, handling: int, image_path: str, poly=None) -> None:
+                 acceleration: int, max_a_speed: int, handling: int, image: pygame.image, poly=None) -> None:
         """
         Initializer
 
@@ -28,7 +28,9 @@ class Car(PhysicsObject):
         :param poly: polygon representing the shape of the car, rectangle by default
         """
 
-        self.sprite = Sprite(size[0], size[1], (0, 0), image_path)
+        self.sprite = Sprite(size[0], size[1], image)
+        self.max_a_speed = max_a_speed
+        self.handling = handling
 
         # if poly is None, create polygon from rect
         if poly is None:
@@ -40,7 +42,37 @@ class Car(PhysicsObject):
             ]
             poly = Polygon(corners)
 
-        super().__init__(mass, max_speed, acceleration, max_a_speed, handling, pos, poly)
+        super().__init__(mass, max_speed, acceleration, pos, poly)
+
+    def steer_car(self, direction: int) -> None:
+        """
+        Steers the car by changing the angular velocity of the car
+
+        :param magnitude: magnitude of the force
+        :param direction: direction of the force
+        :return: None
+        """
+
+        # calculate the angular velocity
+        if abs(self.vel) <= 0.5:
+            a_vel = 0
+        elif abs(self.vel) <= 0.75 * self.max_speed:
+            a_vel = self.handling * (self.vel / 150)
+        else:
+            magnitude = self.handling - (abs(self.vel) / 75)
+            a_vel = math.copysign(magnitude, self.vel)
+
+        if a_vel >= self.max_a_speed:
+            a_vel = self.max_a_speed
+
+        #   determine the direction of normal acceleration
+        if direction == RIGHT:
+            a_vel *= -1
+
+        # update the angular position
+        dth = a_vel * (1 / TICKRATE)
+        self.a_pos += dth
+        self.poly = rotate(self.poly, - dth * 180 / math.pi)
 
     def update_sprite(self) -> None:
         """

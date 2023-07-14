@@ -6,8 +6,7 @@ class Sprite(pygame.sprite.Sprite):
     PyGame Sprite class
     """
 
-    def __init__(self, w: int, h: int, pos: tuple[int, int],
-                 image_path: str):
+    def __init__(self, pos: tuple[int, int], image: pygame.image):
         """
         Initializer
 
@@ -20,12 +19,7 @@ class Sprite(pygame.sprite.Sprite):
         super().__init__()
 
         # Image
-        self.image = pygame.image.load(image_path)
-        # Resize
-        self.image = pygame.transform.scale(
-            self.image,
-            (w, h),
-        )
+        self.image = image
 
         # make the space created from rotation transparent
         self.image = self.image.convert_alpha()

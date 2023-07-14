@@ -16,7 +16,7 @@ class PhysicsObject:
     vel: float
     a_pos: float
 
-    def __init__(self, mass: int, max_speed: int, acceleration: int, max_a_speed: int, handling: int,
+    def __init__(self, mass: int, max_speed: int, acceleration: int,
                  pos: list[int, int], poly: Polygon) -> None:
         """
         Initializer
@@ -30,15 +30,13 @@ class PhysicsObject:
         self.mass = mass
         self.max_speed = max_speed
         self.acceleration = acceleration
-        self.max_a_speed = max_a_speed
-        self.handling = handling
 
         self.pos = pos              # (x, y)
         self.vel = 0                # tangential velocity
 
         self.a_pos = math.pi        # angular position in radians; positive is CCW
 
-    def apply_force_tan(self, direction: str) -> None:
+    def apply_force_tan(self, direction: int) -> None:
         """
         Applies a force relative to this PhysicsObject and updates the velocity in the tangential direction
 
@@ -50,7 +48,7 @@ class PhysicsObject:
         acc = self.acceleration / self.mass
 
         # flip the sign if the direction of the force is down
-        if direction == "down":
+        if direction == DOWN:
             acc *= -1
 
         # calculate velocity
@@ -59,36 +57,6 @@ class PhysicsObject:
 
         if abs(self.vel) >= self.max_speed:
             self.vel = math.copysign(self.max_speed, self.vel)
-
-    def steer_car(self, direction: str) -> None:
-        """
-        Steers the car by changing the angular velocity of the car
-
-        :param magnitude: magnitude of the force
-        :param direction: direction of the force
-        :return: None
-        """
-
-        # calculate the angular velocity
-        if abs(self.vel) <= 0.5:
-            a_vel = 0
-        elif abs(self.vel) <= 0.75 * self.max_speed:
-            a_vel = self.handling * (self.vel / 150)
-        else:
-            magnitude = self.handling - (abs(self.vel) / 75)
-            a_vel = math.copysign(magnitude, self.vel)
-
-        if a_vel >= self.max_a_speed:
-            a_vel = self.max_a_speed
-
-        #   determine the direction of normal acceleration
-        if direction == "right":
-            a_vel *= -1
-
-        # update the angular position
-        dth = a_vel * (1 / TICKRATE)
-        self.a_pos += dth
-        self.poly = rotate(self.poly, - dth * 180 / math.pi)
 
     def check_wall_collision(self) -> None:
         """
