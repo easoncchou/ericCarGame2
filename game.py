@@ -63,14 +63,14 @@ class Game:
             #   better to handle this way to account for holding down key
             #   presses
             keys = pygame.key.get_pressed()
-            if keys[pygame.K_UP]:
+            if keys[pygame.K_w]:
                 self.cars[0].apply_force_tan(UP)
                 # TODO change from cars[0]
-            if keys[pygame.K_DOWN]:
+            if keys[pygame.K_s]:
                 self.cars[0].apply_force_tan(DOWN)
-            if keys[pygame.K_RIGHT]:
+            if keys[pygame.K_d]:
                 self.cars[0].steer_car(RIGHT)
-            if keys[pygame.K_LEFT]:
+            if keys[pygame.K_a]:
                 self.cars[0].steer_car(LEFT)
 
             # update cars

@@ -51,13 +51,8 @@ class Car(PhysicsObject):
         """
 
         # calculate the angular velocity
-        if abs(self.vel) <= 0.5:
-            a_vel = 0
-        elif abs(self.vel) <= 0.75 * self.max_speed:
-            a_vel = self.handling * (self.vel / 150)
-        else:
-            magnitude = self.handling - (abs(self.vel) / 75)
-            a_vel = math.copysign(magnitude, self.vel)
+
+        a_vel = self.vel / self.handling
 
         if a_vel >= self.max_a_speed:
             a_vel = self.max_a_speed

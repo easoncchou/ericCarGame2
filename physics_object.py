@@ -11,10 +11,11 @@ class PhysicsObject:
 
     mass: int
     poly: Polygon
-    handling: int
     pos: list[int, int]
     vel: float
     a_pos: float
+    max_speed: int
+    acceleration: int
 
     def __init__(self, mass: int, max_speed: int, acceleration: int,
                  pos: list[int, int], poly: Polygon) -> None:
