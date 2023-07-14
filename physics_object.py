@@ -1,36 +1,38 @@
 from constants import *
 import math
+from shapely.geometry import Polygon, LineString
+from shapely.affinity import translate, rotate
 
 
 class PhysicsObject:
     """
-    Any rectangular object with physics
+    Any convex polygon object with physics
     """
 
     mass: int
-    size: tuple[int, int]
+    poly: Polygon
     handling: int
     pos: list[int, int]
     vel: float
     a_pos: float
 
-    def __init__(self, mass: int, size: tuple[int, int], handling) -> None:
+    def __init__(self, mass: int, handling: int, pos: list[int, int], poly: Polygon) -> None:
         """
         Initializer
 
-        :param mass: mass of the car
-        :param size: size of the car
-        :param handling: how well a car steers/turns (the higher the value the faster it turns)
+        :param mass: mass of the obj
+        :param poly: size of the obj
+        :param pos: position of the obj
         """
 
+        self.poly = poly
         self.mass = mass
-        self.size = size
-        self.handling = 5
+        self.handling = handling
 
-        self.pos = [100, 100]       # (x, y)
-        self.vel = 0            # tangential velocity
+        self.pos = pos              # (x, y)
+        self.vel = 0                # tangential velocity
 
-        self.a_pos = math.pi          # angular position in radians; positive is CCW
+        self.a_pos = math.pi        # angular position in radians; positive is CCW
 
     def apply_force_tan(self, magnitude: int, direction: float) -> None:
         """
@@ -71,29 +73,36 @@ class PhysicsObject:
             a_vel *= -1
 
         # update the angular position
-        self.a_pos += a_vel * (1 / TICKRATE)
+        dth = a_vel * (1 / TICKRATE)
+        self.a_pos += dth
+        self.poly = rotate(self.poly, - dth * 180 / math.pi)
 
-    def check_wall_collision(self, w: int, h: int) -> None:
+    def check_wall_collision(self) -> None:
         """
-        Check if the car is in contact with the edge of the window/map and stop the car if it is
+        Check if the object is in contact with the edge of the window/map and stop the object if it is
 
         NOTE: REMEMBER TO CALL IT BEFORE UPDATE POS, WHICH USES VELOCITY (IN GAME.PY)
 
         :return: None
         """
-        # check if the car has hit the edge of the window, and if it has then change the velocity to zero
-        if (self.pos[0] - (w // 2)) < 0:
-            self.pos[0] = 1 + (w // 2)
-            self.vel = 0
-        elif (self.pos[0] + (w / 2)) > MAP_WIDTH:
-            self.pos[0] = MAP_WIDTH - 1 - (w // 2)
-            self.vel = 0
 
-        if (self.pos[1] - (h // 2)) < 0:
-            self.pos[1] = 1 + (h // 2)
+        if self.poly.intersects(LineString([(0, 0), (MAP_WIDTH, 0)])):
+            # shift the position 1 pixel away from the edge
+            self.pos[1] += 1
+            # shift the polygon 1 pixel away from the edge
+            self.poly = translate(self.poly, yoff=1)
             self.vel = 0
-        elif (self.pos[1] + (h / 2)) > MAP_HEIGHT:
-            self.pos[1] = MAP_HEIGHT - 1 - (h // 2)
+        elif self.poly.intersects(LineString([(MAP_WIDTH, 0), (MAP_WIDTH, MAP_HEIGHT)])):
+            self.pos[0] -= 1
+            self.poly = translate(self.poly, xoff=-1)
+            self.vel = 0
+        elif self.poly.intersects(LineString([(MAP_WIDTH, MAP_HEIGHT), (0, MAP_HEIGHT)])):
+            self.pos[1] -= 1
+            self.poly = translate(self.poly, yoff=-1)
+            self.vel = 0
+        elif self.poly.intersects(LineString([(0, MAP_HEIGHT), (0, 0)])):
+            self.pos[0] += 1
+            self.poly = translate(self.poly, xoff=1)
             self.vel = 0
 
     def update_pos(self) -> None:
@@ -106,10 +115,25 @@ class PhysicsObject:
         if abs(self.vel) > 0.5:
             self.vel -= math.copysign(0.5, self.vel)
 
-        self.pos[0] += (self.vel * math.sin(self.a_pos)) * (1 / TICKRATE)
-        self.pos[1] += (self.vel * math.cos(self.a_pos)) * (1 / TICKRATE)
+        dx = (self.vel * math.sin(self.a_pos)) * (1 / TICKRATE)
+        dy = (self.vel * math.cos(self.a_pos)) * (1 / TICKRATE)
+
+        self.pos[0] += dx
+        self.pos[1] += dy
+
+        self.poly = translate(self.poly, xoff=dx, yoff=dy)
 
 
+def is_collide(obj1: PhysicsObject, obj2: PhysicsObject) -> bool:
+    """
+    Check if two PhysicsObjects are colliding
+
+    :param obj1: a PhysicsObject
+    :param obj2: a PhysicsObject
+    :return: true iff the two object are colliding
+    """
+
+    return obj1.poly.intersects(obj2.poly)
 
 
 

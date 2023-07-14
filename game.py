@@ -75,12 +75,17 @@ class Game:
 
             # update cars
             for car in self.cars:
-                car.check_wall_collision(car.sprite.rect.w, car.sprite.rect.h)
+                car.check_wall_collision()
                 car.update_pos()
                 car.update_sprite()
 
             # render
             self.screen.fill(WHITE)
+
+            # debug draw polygon todo remove later
+            polygon_vertices = list(self.cars[0].poly.exterior.coords)
+            pygame.draw.polygon(self.screen, RED, polygon_vertices)
+
             self.all_sprites_group.update()
             self.all_sprites_group.draw(self.screen)
 
