@@ -64,14 +64,14 @@ class Game:
             #   presses
             keys = pygame.key.get_pressed()
             if keys[pygame.K_UP]:
-                self.cars[0].apply_force_tan(2000, 1.6)
+                self.cars[0].apply_force_tan("up")
                 # TODO change from cars[0]
             if keys[pygame.K_DOWN]:
-                self.cars[0].apply_force_tan(-2000, 1.6)
+                self.cars[0].apply_force_tan("down")
             if keys[pygame.K_RIGHT]:
-                self.cars[0].steer_car(500, 0)
+                self.cars[0].steer_car("right")
             if keys[pygame.K_LEFT]:
-                self.cars[0].steer_car(500, 180)
+                self.cars[0].steer_car("left")
 
             # update cars
             for car in self.cars:

@@ -16,7 +16,8 @@ class PhysicsObject:
     vel: float
     a_pos: float
 
-    def __init__(self, mass: int, handling: int, pos: list[int, int], poly: Polygon) -> None:
+    def __init__(self, mass: int, max_speed: int, acceleration: int, max_a_speed: int, handling: int,
+                 pos: list[int, int], poly: Polygon) -> None:
         """
         Initializer
 
@@ -27,6 +28,9 @@ class PhysicsObject:
 
         self.poly = poly
         self.mass = mass
+        self.max_speed = max_speed
+        self.acceleration = acceleration
+        self.max_a_speed = max_a_speed
         self.handling = handling
 
         self.pos = pos              # (x, y)
@@ -34,26 +38,29 @@ class PhysicsObject:
 
         self.a_pos = math.pi        # angular position in radians; positive is CCW
 
-    def apply_force_tan(self, magnitude: int, direction: float) -> None:
+    def apply_force_tan(self, direction: str) -> None:
         """
         Applies a force relative to this PhysicsObject and updates the velocity in the tangential direction
 
-        :param magnitude: magnitude of the force
         :param direction: direction of the force
         :return: None
         """
 
         # calculate acceleration
-        acc = magnitude / self.mass
+        acc = self.acceleration / self.mass
+
+        # flip the sign if the direction of the force is down
+        if direction == "down":
+            acc *= -1
 
         # calculate velocity
         #   tangential only - normal velocity is always 0 by definition
         self.vel += acc * (1 / TICKRATE)
 
-        if abs(self.vel) >= MAX_SPEED:
-            self.vel = math.copysign(MAX_SPEED, self.vel)
+        if abs(self.vel) >= self.max_speed:
+            self.vel = math.copysign(self.max_speed, self.vel)
 
-    def steer_car(self, magnitude: int, direction: float) -> None:
+    def steer_car(self, direction: str) -> None:
         """
         Steers the car by changing the angular velocity of the car
 
@@ -63,13 +70,19 @@ class PhysicsObject:
         """
 
         # calculate the angular velocity
-        a_vel = self.vel * magnitude / 100000 * (self.handling / 2)
+        if abs(self.vel) <= 0.5:
+            a_vel = 0
+        elif abs(self.vel) <= 0.75 * self.max_speed:
+            a_vel = self.handling * (self.vel / 150)
+        else:
+            magnitude = self.handling - (abs(self.vel) / 75)
+            a_vel = math.copysign(magnitude, self.vel)
 
-        if a_vel >= MAX_A_SPEED:
-            a_vel = MAX_A_SPEED
+        if a_vel >= self.max_a_speed:
+            a_vel = self.max_a_speed
 
         #   determine the direction of normal acceleration
-        if direction == 0:
+        if direction == "right":
             a_vel *= -1
 
         # update the angular position

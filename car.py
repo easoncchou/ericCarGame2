@@ -17,7 +17,8 @@ class Car(PhysicsObject):
     a_vel: float
     sprite: Sprite
 
-    def __init__(self, mass: int, size: tuple[int, int], pos: list[int, int], handling: int, poly=None) -> None:
+    def __init__(self, mass: int, size: tuple[int, int], pos: list[int, int], max_speed: int,
+                 acceleration: int, max_a_speed: int, handling: int, image_path: str, poly=None) -> None:
         """
         Initializer
 
@@ -27,7 +28,7 @@ class Car(PhysicsObject):
         :param poly: polygon representing the shape of the car, rectangle by default
         """
 
-        self.sprite = Sprite(size[0], size[1], (0, 0), "assets/car1.png")
+        self.sprite = Sprite(size[0], size[1], (0, 0), image_path)
 
         # if poly is None, create polygon from rect
         if poly is None:
@@ -39,7 +40,7 @@ class Car(PhysicsObject):
             ]
             poly = Polygon(corners)
 
-        super().__init__(mass, handling, pos, poly)
+        super().__init__(mass, max_speed, acceleration, max_a_speed, handling, pos, poly)
 
     def update_sprite(self) -> None:
         """
