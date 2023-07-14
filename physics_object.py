@@ -104,15 +104,3 @@ class PhysicsObject:
         self.pos[1] += dy
 
         self.poly = translate(self.poly, xoff=dx, yoff=dy)
-
-
-def is_collide(obj1: PhysicsObject, obj2: PhysicsObject) -> bool:
-    """
-    Check if two PhysicsObjects are colliding
-
-    :param obj1: a PhysicsObject
-    :param obj2: a PhysicsObject
-    :return: true iff the two object are colliding
-    """
-
-    return obj1.poly.intersects(obj2.poly)

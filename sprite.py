@@ -6,7 +6,7 @@ class Sprite(pygame.sprite.Sprite):
     PyGame Sprite class
     """
 
-    def __init__(self, pos: tuple[int, int], image: pygame.image):
+    def __init__(self, pos: list[int, int], image: pygame.image):
         """
         Initializer
 

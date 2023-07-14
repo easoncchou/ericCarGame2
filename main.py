@@ -11,5 +11,10 @@ if __name__ == '__main__':
         car_image,
         (40, 75),
     )
-    game.add_car(Car(20, [100, 100], 300, 2000, 100, 100, car_image))
+    init_pos = [100, 100]
+
+    gun_image = pygame.surface.Surface((10, 30))
+    gun_image.fill(BLUE)
+    game.add_car(Car(20, init_pos, 300, 2000, 100, 100, car_image, MachineGun(init_pos, 20, 10, 500, Sprite(init_pos, gun_image))))
     game.run_game_loop()
+

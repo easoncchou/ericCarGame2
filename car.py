@@ -1,7 +1,6 @@
-import pygame
-
 from physics_object import *
 from sprite import *
+from weapon import *
 
 
 class Car(PhysicsObject):
@@ -16,9 +15,10 @@ class Car(PhysicsObject):
     a_pos: float
     a_vel: float
     sprite: Sprite
+    wep: Weapon
 
     def __init__(self, mass: int, pos: list[int], max_speed: int,
-                 acceleration: int, max_a_speed: int, handling: int, image: pygame.image, poly=None) -> None:
+                 acceleration: int, max_a_speed: int, handling: int, image: pygame.image, wep: Weapon, poly=None) -> None:
         """
         Initializer
 
@@ -27,9 +27,10 @@ class Car(PhysicsObject):
         :param poly: polygon representing the shape of the car, rectangle by default
         """
 
-        self.sprite = Sprite((pos[0], pos[1]), image)
+        self.sprite = Sprite(pos, image)
         self.max_a_speed = max_a_speed
         self.handling = handling
+        self.wep = wep
 
         # if poly is None, create polygon from rect
         if poly is None:
@@ -75,4 +76,6 @@ class Car(PhysicsObject):
 
         self.sprite.image = pygame.transform.rotate(self.sprite.original_image, ((180 / math.pi) * self.a_pos))
         self.sprite.rect = self.sprite.image.get_rect(center=self.sprite.image.get_rect(center=(self.pos[0], self.pos[1])).center)
+
+        self.wep.update_sprite(self.pos)
 

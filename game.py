@@ -14,6 +14,7 @@ class Game:
     done: bool
     size: tuple[int, int]
     cars: list[Car]
+    projs: list[Projectile]
 
     def __init__(self, width: int, height: int) -> None:
         """
@@ -32,6 +33,7 @@ class Game:
         self.all_sprites_group = pygame.sprite.Group()
 
         self.cars = []
+        self.projs = []
 
         # can set title later
 
@@ -45,6 +47,7 @@ class Game:
 
         self.cars.append(car)
         self.all_sprites_group.add(car.sprite)
+        self.all_sprites_group.add(car.wep.sprite)
 
     def run_game_loop(self) -> None:
         """
@@ -73,11 +76,35 @@ class Game:
             if keys[pygame.K_a]:
                 self.cars[0].steer_car(LEFT)
 
+            # handle mouse
+            x, y = pygame.mouse.get_pos()
+
+            try:
+                if y - self.cars[0].pos[1] >= 0:
+                    self.cars[0].wep.a_pos = math.atan((x - self.cars[0].pos[0]) / (y - self.cars[0].pos[1]))
+                else:
+                    self.cars[0].wep.a_pos = math.pi + math.atan((x - self.cars[0].pos[0]) / (y - self.cars[0].pos[1]))
+            except ZeroDivisionError:
+                # if there's a zero division error, then do nothing
+                pass
+
+            m_buttons = pygame.mouse.get_pressed()
+            if m_buttons[0]:
+                new_proj = self.cars[0].wep.shoot()
+                if new_proj is not None:
+                    self.projs.append(new_proj)
+                    self.all_sprites_group.add(new_proj.sprite)
+
             # update cars
             for car in self.cars:
                 car.check_wall_collision()
                 car.update_pos()
                 car.update_sprite()
+
+            # update projectiles
+            for proj in self.projs:
+                proj.update_pos()
+                proj.update_sprite()
 
             # render
             self.screen.fill(WHITE)
