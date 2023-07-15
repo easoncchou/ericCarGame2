@@ -21,6 +21,12 @@ class Projectile(PhysicsObject):
         Initializer
 
         :param mass: mass of projectile
+        :param damage: damage done by the projectile when it collides with a target
+        :param mass: mass of the projectile
+        :param pos: a list of two integers representing the x and y coordinates of the projectile
+        :param speed: the speed at which the projectile will travel at
+        :param a_pos: the angular position of the projectile, in radians
+        :param image: a pygame image of the projectile's sprite currently loaded in main
         :param poly: polygon representing the shape of the projectile, rectangle by default
         """
 

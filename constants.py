@@ -2,6 +2,7 @@ TICKRATE = 60
 
 # COLORS
 BLACK = (0, 0, 0)
+GREY = (90, 90, 90)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)

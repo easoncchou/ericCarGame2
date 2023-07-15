@@ -23,8 +23,10 @@ class PhysicsObject:
         Initializer
 
         :param mass: mass of the obj
-        :param poly: size of the obj
+        :param max_speed: maximum speed of the obj
+        :param acceleration: how fast the obj reaches max speed if speed isn't constant
         :param pos: position of the obj
+        :param poly: size of the obj
         """
 
         self.poly = poly

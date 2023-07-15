@@ -46,7 +46,6 @@ class Car(PhysicsObject):
         """
         Steers the car by changing the angular velocity of the car
 
-        :param magnitude: magnitude of the force
         :param direction: direction of the force
         :return: None
         """
