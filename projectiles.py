@@ -1,8 +1,9 @@
 from sprite import *
 from physics_object import *
+from entities import *
 
 
-class Projectile(PhysicsObject):
+class Projectile(PhysicsObject, GenericEntity):
     """
     Projectile fired from a weapon
     """
@@ -16,7 +17,7 @@ class Projectile(PhysicsObject):
     max_speed: int
     acceleration: int
 
-    def __init__(self, damage: float, mass: int, pos: list[int], speed: int, a_pos: float, image: pygame.image, poly=None) -> None:
+    def __init__(self, game, damage: float, mass: int, pos: list[int], speed: int, a_pos: float, image: pygame.image, poly=None) -> None:
         """
         Initializer
 
@@ -42,7 +43,8 @@ class Projectile(PhysicsObject):
                         self.sprite.rect.bottomleft]
             poly = Polygon(vertices)
 
-        super().__init__(mass, speed, 0, pos, poly)
+        GenericEntity.__init__(self, game)
+        PhysicsObject.__init__(self, mass, speed, 0, pos, poly)
         self.vel = speed
         self.a_pos = a_pos
 
@@ -60,7 +62,7 @@ class Projectile(PhysicsObject):
 
         self.sprite.rect = self.sprite.image.get_rect(center=self.sprite.image.get_rect(center=(self.pos[0], self.pos[1])).center)
 
-    def check_bound_collision(self, game) -> None:
+    def check_bound_collision(self) -> None:
         """
         Checks if the projectile is out of bounds
 
@@ -69,8 +71,18 @@ class Projectile(PhysicsObject):
         OUTER_BOUND = 100
 
         if self.pos[0] <= -OUTER_BOUND or self.pos[0] > MAP_WIDTH + OUTER_BOUND or self.pos[1] <= -OUTER_BOUND or self.pos[1] > MAP_HEIGHT + OUTER_BOUND:
-            game.all_sprites_group.remove(self.sprite)
-            game.projs.remove(self)
+            self.game.all_sprites_group.remove(self.sprite)
+            self.game.ents.remove(self)
+
+    def update(self) -> None:
+        """
+        Updates the entity every tick
+        :return: None
+        """
+
+        self.update_pos()
+        self.update_sprite()
+        self.check_bound_collision()
 
 
 class Bullet(Projectile):

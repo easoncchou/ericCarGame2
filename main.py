@@ -2,8 +2,9 @@ from game import *
 
 
 if __name__ == '__main__':
-    # set the size of the map
+    # create game
     game = Game(MAP_WIDTH, MAP_HEIGHT)
+
     # load the image for the car
     car_image = pygame.image.load("assets/car1.png")
     # Resize
@@ -16,7 +17,15 @@ if __name__ == '__main__':
     # define the pygame sprite for the machine gun
     gun_image = pygame.surface.Surface((10, 30))
     gun_image.fill(GREY)
-    game.add_car(Car(20, init_pos, 250, 2000, 100, 100, car_image,
-                     MachineGun(init_pos, 20, 10, 500, Sprite(init_pos, gun_image))))
+
+    # create car and wep
+    car = Car(game, 20, init_pos, 250, 2000, 100, 100, 500, car_image)
+    wep = MachineGun(game, car, init_pos, 20, 10, 500, gun_image)
+
+    # add wep to car and car to game
+    car.set_weapon(wep)
+    game.set_car(car)
+
+    # run game
     game.run_game_loop()
 

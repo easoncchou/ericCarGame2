@@ -3,11 +3,13 @@ from sprite import *
 from projectiles import *
 
 
-class Weapon:
+class Weapon(GenericEntity):
     """
     Weapons that sit on top of cars that can fire various projectiles
     """
 
+    # car: Car
+    # game: Game
     damage: float           # damage per hit
     atk_cd: int             # cooldown between projectiles being created in ticks
     curr_atk_cd: int        # the time left until the next cd
@@ -16,7 +18,7 @@ class Weapon:
     a_pos: float            # direction the weapon is facing
     pos: list[int]
 
-    def __init__(self, pos: list[int], damage: float, atk_cd: float, ammo: float, sprite: Sprite):
+    def __init__(self, game, car, pos: list[int], damage: float, atk_cd: int, ammo: float, image: pygame.image):
         """
         Initializer
 
@@ -27,25 +29,36 @@ class Weapon:
         :param sprite: the sprite of the weapon
         """
 
+        pos = pos.copy()
+
+        self.game = game
+        self.car = car
         self.damage = damage
         self.atk_cd = atk_cd
         self.curr_atk_cd = 0
         self.ammo = ammo
-        self.sprite = sprite
+        self.sprite = Sprite(pos, image)
         self.a_pos = math.pi
         self.pos = pos
 
-    def update_sprite(self, new_pos: list[int]) -> None:
+    def update_sprite(self) -> None:
         """
         Update sprite
         :return:
         """
 
-        # todo move to a better place
-        self.curr_atk_cd -= 1
-
         self.sprite.image = pygame.transform.rotate(self.sprite.original_image, ((180 / math.pi) * self.a_pos))
         self.sprite.rect = self.sprite.image.get_rect(center=self.sprite.image.get_rect(center=(self.pos[0], self.pos[1])).center)
+
+    def update(self) -> None:
+        """
+        Updates the entity every tick
+        :return: None
+        """
+
+        self.curr_atk_cd -= 1
+        self.pos = self.car.pos
+        self.update_sprite()
 
     def shoot(self) -> Projectile:
         """
@@ -54,20 +67,6 @@ class Weapon:
         """
 
         raise NotImplementedError
-
-    def delete_offscreen_projectile(self) -> None:
-        """
-        Delete a projectile once it has completely gone off the edge of the screen. Deletion is done by both
-        deleting the projectile's sprite and removing it from the game.
-        :return:
-        """
-
-        if self.pos[0] < -50 or self.pos[0] > MAP_WIDTH:
-            pass
-            # TODO: remove it from the sprite group and set the variable to none
-        elif self.pos[0] < -50 or self.pos[0] > MAP_WIDTH:
-            pass
-            # TODO: remove it from the sprite group and set the variable to none
 
 
 class MachineGun(Weapon):
@@ -95,7 +94,9 @@ class MachineGun(Weapon):
         bullet_image = pygame.surface.Surface((2, 80))
         bullet_image.fill([235, 170, 49])
 
-        return Bullet(self.damage, 5, self.pos, 2500, self.a_pos, bullet_image)
+        print(self.pos)
+
+        return Bullet(self.game, self.damage, 5, self.pos, 2500, self.a_pos, bullet_image)
 
 
 class RocketLauncher(Weapon):

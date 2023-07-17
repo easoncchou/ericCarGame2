@@ -1,6 +1,5 @@
-import pygame
-
 from car import *
+from entities import *
 
 
 class Game:
@@ -13,8 +12,8 @@ class Game:
 
     done: bool
     size: tuple[int, int]
-    cars: list[Car]
-    projs: list[Projectile]
+    car: Car
+    ents: list[GenericEntity]
 
     def __init__(self, width: int, height: int) -> None:
         """
@@ -32,12 +31,12 @@ class Game:
         self.clock = pygame.time.Clock()
         self.all_sprites_group = pygame.sprite.Group()
 
-        self.cars = []
-        self.projs = []
+        self.car = None
+        self.ents = []
 
         # can set title later
 
-    def add_car(self, car: Car) -> None:
+    def set_car(self, car: Car) -> None:
         """
         Adds a car to self.cars
 
@@ -45,9 +44,11 @@ class Game:
         :return: None
         """
 
-        self.cars.append(car)
+        self.car = car
         self.all_sprites_group.add(car.sprite)
         self.all_sprites_group.add(car.wep.sprite)
+
+        self.ents.append(car)
 
     def run_game_loop(self) -> None:
         """
@@ -67,56 +68,50 @@ class Game:
             #   presses
             keys = pygame.key.get_pressed()
             if keys[pygame.K_w]:
-                self.cars[0].apply_force_tan(UP)
-                # TODO change from cars[0]
+                self.car.apply_force_tan(UP)
+                # TODO change from car
             if keys[pygame.K_s]:
-                self.cars[0].apply_force_tan(DOWN)
+                self.car.apply_force_tan(DOWN)
             if keys[pygame.K_d]:
-                self.cars[0].steer_car(RIGHT)
+                self.car.steer_car(RIGHT)
             if keys[pygame.K_a]:
-                self.cars[0].steer_car(LEFT)
+                self.car.steer_car(LEFT)
 
             # handle mouse
             x, y = pygame.mouse.get_pos()
 
             try:
-                if y - self.cars[0].pos[1] >= 0:
-                    self.cars[0].wep.a_pos = math.atan((x - self.cars[0].pos[0]) / (y - self.cars[0].pos[1]))
+                if y - self.car.pos[1] >= 0:
+                    self.car.wep.a_pos = math.atan((x - self.car.pos[0]) / (y - self.car.pos[1]))
                 else:
-                    self.cars[0].wep.a_pos = math.pi + math.atan((x - self.cars[0].pos[0]) / (y - self.cars[0].pos[1]))
+                    self.car.wep.a_pos = math.pi + math.atan((x - self.car.pos[0]) / (y - self.car.pos[1]))
             except ZeroDivisionError:
                 # if there's a zero division error, then do nothing
                 pass
 
             m_buttons = pygame.mouse.get_pressed()
             if m_buttons[0]:
-                new_proj = self.cars[0].wep.shoot()
+                new_proj = self.car.wep.shoot()
                 if new_proj is not None:
-                    self.projs.append(new_proj)
+                    self.ents.append(new_proj)
                     self.all_sprites_group.add(new_proj.sprite)
 
-            # update cars
-            for car in self.cars:
-                car.check_wall_collision()
-                car.update_pos()
-                car.update_sprite()
+            # update all entities and check collision between entities
+            for ent in self.ents:
+                ent.update()
 
-            # update projectiles
-            for proj in self.projs:
-                proj.update_pos()
-                proj.update_sprite()
-                proj.check_bound_collision(self)
+
 
             # render
             self.screen.fill(WHITE)
 
             # debug draw polygon todo remove later
-            polygon_vertices = list(self.cars[0].poly.exterior.coords)
+            polygon_vertices = list(self.car.poly.exterior.coords)
             pygame.draw.polygon(self.screen, RED, polygon_vertices)
 
             # debug speedometer todo remove later
             font = pygame.font.SysFont(None, 48)
-            img = font.render(str(round(self.cars[0].vel, 1)), True, BLUE)
+            img = font.render(str(round(self.car.vel, 1)), True, BLUE)
             self.screen.blit(img, (MAP_WIDTH - 120, MAP_HEIGHT - 80))
 
             self.all_sprites_group.update()
@@ -125,5 +120,3 @@ class Game:
             # update display
             pygame.display.flip()
             self.clock.tick(60)
-
-            print(len(self.all_sprites_group))
