@@ -77,4 +77,3 @@ class Car(PhysicsObject):
         self.sprite.rect = self.sprite.image.get_rect(center=self.sprite.image.get_rect(center=(self.pos[0], self.pos[1])).center)
 
         self.wep.update_sprite(self.pos)
-

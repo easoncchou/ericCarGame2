@@ -106,11 +106,7 @@ class Game:
                 proj.update_pos()
                 proj.update_sprite()
 
-                # if a projectile has moved off the screen, delete its sprite and remove it from the list
-                if proj.pos[0] <= -20 or proj.pos[0] > MAP_WIDTH + 20:
-                    self.all_sprites_group.remove(proj.sprite)
-                    self.projs.remove(proj)
-                elif proj.pos[1] <= -20 or proj.pos[1] > MAP_HEIGHT + 20:
+                if proj.check_bound_collision():
                     self.all_sprites_group.remove(proj.sprite)
                     self.projs.remove(proj)
 
