@@ -105,10 +105,7 @@ class Game:
             for proj in self.projs:
                 proj.update_pos()
                 proj.update_sprite()
-
-                if proj.check_bound_collision():
-                    self.all_sprites_group.remove(proj.sprite)
-                    self.projs.remove(proj)
+                proj.check_bound_collision(self)
 
             # render
             self.screen.fill(WHITE)
@@ -128,3 +125,5 @@ class Game:
             # update display
             pygame.display.flip()
             self.clock.tick(60)
+
+            print(len(self.all_sprites_group))

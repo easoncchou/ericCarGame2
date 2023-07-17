@@ -60,15 +60,17 @@ class Projectile(PhysicsObject):
 
         self.sprite.rect = self.sprite.image.get_rect(center=self.sprite.image.get_rect(center=(self.pos[0], self.pos[1])).center)
 
-    def check_bound_collision(self) -> bool:
+    def check_bound_collision(self, game) -> None:
         """
         Checks if the projectile is out of bounds
 
-        :return: true iff the projectile is out of bounds
+        :return: None
         """
         OUTER_BOUND = 100
 
-        return self.pos[0] <= -OUTER_BOUND or self.pos[0] > MAP_WIDTH + OUTER_BOUND or self.pos[1] <= -OUTER_BOUND or self.pos[1] > MAP_HEIGHT + OUTER_BOUND
+        if self.pos[0] <= -OUTER_BOUND or self.pos[0] > MAP_WIDTH + OUTER_BOUND or self.pos[1] <= -OUTER_BOUND or self.pos[1] > MAP_HEIGHT + OUTER_BOUND:
+            game.all_sprites_group.remove(self.sprite)
+            game.projs.remove(self)
 
 
 class Bullet(Projectile):
