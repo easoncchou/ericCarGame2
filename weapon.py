@@ -1,6 +1,10 @@
 import math
+
+from entities import GenericEntity
 from sprite import *
 from projectiles import *
+from game import *
+from car import *
 
 
 class Weapon(GenericEntity):
@@ -8,8 +12,8 @@ class Weapon(GenericEntity):
     Weapons that sit on top of cars that can fire various projectiles
     """
 
-    # car: Car
-    # game: Game
+    car: 'Car'
+    game: 'Game'
     damage: float           # damage per hit
     atk_cd: int             # cooldown between projectiles being created in ticks
     curr_atk_cd: int        # the time left until the next cd
@@ -18,7 +22,7 @@ class Weapon(GenericEntity):
     a_pos: float            # direction the weapon is facing
     pos: list[int]
 
-    def __init__(self, game, car, pos: list[int], damage: float, atk_cd: int, ammo: float, image: pygame.image):
+    def __init__(self, game: 'Game', car: 'Car', pos: list[int], damage: float, atk_cd: int, ammo: float, image: pygame.image):
         """
         Initializer
 
@@ -31,7 +35,6 @@ class Weapon(GenericEntity):
 
         pos = pos.copy()
 
-        self.game = game
         self.car = car
         self.damage = damage
         self.atk_cd = atk_cd
@@ -40,6 +43,8 @@ class Weapon(GenericEntity):
         self.sprite = Sprite(pos, image)
         self.a_pos = math.pi
         self.pos = pos
+
+        GenericEntity.__init__(self, game)
 
     def update_sprite(self) -> None:
         """
@@ -80,7 +85,7 @@ class MachineGun(Weapon):
     :param sprite: the sprite of the weapon
     """
 
-    def shoot(self) -> Bullet:
+    def shoot(self) -> None:
         """
         Shoots a bullet in the guns current direction
         :return:
@@ -88,15 +93,15 @@ class MachineGun(Weapon):
 
         if self.curr_atk_cd <= 0:
             self.curr_atk_cd = self.atk_cd
-        else:
-            return None
 
-        bullet_image = pygame.surface.Surface((2, 80))
-        bullet_image.fill([235, 170, 49])
+            bullet_image = pygame.surface.Surface((2, 80))
+            bullet_image.fill(YELLOW)
 
-        print(self.pos)
+            new_proj = Bullet(self.game, self.damage, 5, self.pos, 2500, self.a_pos, bullet_image)
 
-        return Bullet(self.game, self.damage, 5, self.pos, 2500, self.a_pos, bullet_image)
+            self.game.ents.append(new_proj)
+            self.game.phys_objs.append(new_proj)
+            self.game.all_sprites_group.add(new_proj.sprite)
 
 
 class RocketLauncher(Weapon):

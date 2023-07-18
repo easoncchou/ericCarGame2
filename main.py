@@ -26,6 +26,13 @@ if __name__ == '__main__':
     car.set_weapon(wep)
     game.set_car(car)
 
+    # add target
+    target_image = pygame.surface.Surface((50, 50))
+    target_image.fill(RED)
+    target = Target(game, [400, 400], 500, target_image)
+
+    game.add_target(target)
+
     # run game
     game.run_game_loop()
 

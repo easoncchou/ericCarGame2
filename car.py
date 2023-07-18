@@ -1,4 +1,5 @@
-from entities import GenericEntity
+from game import *
+from entities import *
 from physics_object import *
 from sprite import *
 from weapon import *
@@ -10,6 +11,7 @@ class Car(PhysicsObject, HealthEntity):
     Car class
     """
 
+    game: 'Game'
     mass: int
     size: tuple[int, int]
     pos: list[int, int]
@@ -19,7 +21,7 @@ class Car(PhysicsObject, HealthEntity):
     sprite: Sprite
     wep: Weapon
 
-    def __init__(self, game, mass: int, pos: list[int], max_speed: int,
+    def __init__(self, game: 'Game', mass: int, pos: list[int], max_speed: int,
                  acceleration: int, max_a_speed: int, handling: int, max_hp: int, image: pygame.image, poly=None) -> None:
         """
         Initializer

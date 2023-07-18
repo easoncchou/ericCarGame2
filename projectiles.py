@@ -1,6 +1,7 @@
 from sprite import *
 from physics_object import *
 from entities import *
+from game import *
 
 
 class Projectile(PhysicsObject, GenericEntity):
@@ -8,6 +9,7 @@ class Projectile(PhysicsObject, GenericEntity):
     Projectile fired from a weapon
     """
 
+    game: 'Game'
     damage: float
     mass: int
     poly: Polygon
@@ -17,7 +19,7 @@ class Projectile(PhysicsObject, GenericEntity):
     max_speed: int
     acceleration: int
 
-    def __init__(self, game, damage: float, mass: int, pos: list[int], speed: int, a_pos: float, image: pygame.image, poly=None) -> None:
+    def __init__(self, game: 'Game', damage: float, mass: int, pos: list[int], speed: int, a_pos: float, image: pygame.image, poly=None) -> None:
         """
         Initializer
 
@@ -71,8 +73,7 @@ class Projectile(PhysicsObject, GenericEntity):
         OUTER_BOUND = 100
 
         if self.pos[0] <= -OUTER_BOUND or self.pos[0] > MAP_WIDTH + OUTER_BOUND or self.pos[1] <= -OUTER_BOUND or self.pos[1] > MAP_HEIGHT + OUTER_BOUND:
-            self.game.all_sprites_group.remove(self.sprite)
-            self.game.ents.remove(self)
+            self.delete()
 
     def update(self) -> None:
         """

@@ -1,5 +1,10 @@
+import itertools
+
 from car import *
 from entities import *
+from physics_object import *
+from projectiles import *
+from enemy import *
 
 
 class Game:
@@ -14,6 +19,7 @@ class Game:
     size: tuple[int, int]
     car: Car
     ents: list[GenericEntity]
+    phys_objs: list[PhysicsObject]
 
     def __init__(self, width: int, height: int) -> None:
         """
@@ -33,6 +39,7 @@ class Game:
 
         self.car = None
         self.ents = []
+        self.phys_objs = []
 
         # can set title later
 
@@ -49,6 +56,18 @@ class Game:
         self.all_sprites_group.add(car.wep.sprite)
 
         self.ents.append(car)
+        self.phys_objs.append(car)
+
+    def add_target(self, target: Target) -> None:
+        """
+        Adds a target to shoot at
+
+        :param target: target object to add
+        :return:
+        """
+        self.all_sprites_group.add(target.sprite)
+        self.ents.append(target)
+        self.phys_objs.append(target)
 
     def run_game_loop(self) -> None:
         """
@@ -91,19 +110,39 @@ class Game:
 
             m_buttons = pygame.mouse.get_pressed()
             if m_buttons[0]:
-                new_proj = self.car.wep.shoot()
-                if new_proj is not None:
-                    self.ents.append(new_proj)
-                    self.all_sprites_group.add(new_proj.sprite)
+                self.car.wep.shoot()
 
-            # update all entities and check collision between entities
+            # update all entities
             for ent in self.ents:
                 ent.update()
 
+            # compare each object with every other object
+            for obj1, obj2 in itertools.combinations(self.phys_objs, 2):
+                if obj1.collide(obj2):
 
+                    # check if it's a projectile collision
+                    if isinstance(obj1, Projectile):
+                        obj1: Projectile
+                        if isinstance(obj2, HealthEntity):
+                            obj2: HealthEntity
+                            obj2.hp -= obj1.damage
+                            obj1.delete()
+
+
+                    # check if it's a projectile collision
+                    elif isinstance(obj2, Projectile):
+                        obj2: Projectile
+                        if isinstance(obj1, HealthEntity):
+                            obj1: HealthEntity
+                            obj1.hp -= obj2.damage
+                            obj2.delete()
+
+                    else:
+                        # do something?
+                        pass
 
             # render
-            self.screen.fill(WHITE)
+            self.screen.fill(GRASS_GREEN)
 
             # debug draw polygon todo remove later
             polygon_vertices = list(self.car.poly.exterior.coords)

@@ -106,3 +106,13 @@ class PhysicsObject:
         self.pos[1] += dy
 
         self.poly = translate(self.poly, xoff=dx, yoff=dy)
+
+    def collide(self, other: 'PhysicsObject') -> bool:
+        """
+        Checks if self collides with other
+
+        :param other: other PhysicsObject
+        :return: true iff they collide
+        """
+
+        return self.poly.intersects(other.poly)

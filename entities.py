@@ -1,10 +1,14 @@
+from game import *
+from physics_object import *
+
+
 class GenericEntity:
     """
     An entity with a sprite
     """
-    # game: Game
+    game: 'Game'
 
-    def __init__(self, game):
+    def __init__(self, game: 'Game'):
         """
         Initializer
         """
@@ -14,10 +18,23 @@ class GenericEntity:
     def update(self) -> None:
         """
         Updates the entity every tick
+
         :return: None
         """
 
         raise NotImplementedError
+
+    def delete(self) -> None:
+        """
+        Deletes the entity from the game
+
+        :return: None
+        """
+
+        self.game.all_sprites_group.remove(self.sprite)
+        self.game.ents.remove(self)
+        if isinstance(self, PhysicsObject):
+            self.game.phys_objs.remove(self)
 
 
 class HealthEntity(GenericEntity):
@@ -25,11 +42,11 @@ class HealthEntity(GenericEntity):
     An entity with HP
     """
 
-    # game: Game
+    game: 'Game'
     max_hp: int
     hp: int
 
-    def __init__(self, game, max_hp: int) -> None:
+    def __init__(self, game: 'Game', max_hp: int) -> None:
         """
         Initializer
 
