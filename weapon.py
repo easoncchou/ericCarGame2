@@ -20,9 +20,11 @@ class Weapon(GenericEntity):
     ammo: float             # when ammo runs out, can't shoot
     sprite: Sprite          # sprite for the weapon
     a_pos: float            # direction the weapon is facing
-    pos: list[int]
+    pos: list[int]          # position of the weapon in x y coordinates
+    rot_off: tuple[int]     # offset for the pivot of rotation for the sprite
 
-    def __init__(self, game: 'Game', car: 'Car', pos: list[int], damage: float, atk_cd: int, ammo: float, image: pygame.image):
+    def __init__(self, game: 'Game', car: 'Car', pos: list[int], damage: float, atk_cd: int, ammo: float,
+                 rot_off: tuple[int, int], image: pygame.image):
         """
         Initializer
 
@@ -30,7 +32,7 @@ class Weapon(GenericEntity):
         :param damage: an integer representing the damage value of each projectile fired by the weapon
         :param atk_cd: the number of ticks a weapon requires inbetween firing projectiles
         :param ammo: the number of projectiles a weapon can fire before running out
-        :param sprite: the sprite of the weapon
+        :param image: the image for the sprite of the weapon
         """
 
         pos = pos.copy()
@@ -43,8 +45,9 @@ class Weapon(GenericEntity):
         self.sprite = Sprite(pos, image)
         self.a_pos = math.pi
         self.pos = pos
+        self.rot_off = rot_off
 
-        GenericEntity.__init__(self, game, self.pos, self.sprite)
+        GenericEntity.__init__(self, game, self.pos, self.sprite, self.rot_off)
 
     def update(self) -> None:
         """
@@ -105,21 +108,22 @@ class RocketLauncher(Weapon):
     :param sprite: the sprite of the weapon
     """
 
-    def shoot(self) -> Rocket:
+    def shoot(self) -> None:
         """
-        Shoots a rocket in the guns current direction, which will seek out a target
+        Shoots a bullet in the guns current direction
         :return:
         """
-
         if self.curr_atk_cd <= 0:
             self.curr_atk_cd = self.atk_cd
-        else:
-            return None
 
-        rocket_image = pygame.surface.Surface((15, 60))
-        rocket_image.fill(RED)
+            rocket_image = pygame.image.load("assets/rocket1.png")
+            rocket_image = pygame.transform.scale(rocket_image, [65, 65])
 
-        return Rocket(self.damage, 5, self.pos, 1000, self.a_pos, rocket_image)
+            new_proj = Rocket(self.game, self.damage, 25, self.pos, 750, self.a_pos, rocket_image)
+
+            self.game.ents.append(new_proj)
+            self.game.projs.append(new_proj)
+            self.game.all_sprites_group.add(new_proj.sprite)
 
 
 

@@ -20,15 +20,15 @@ if __name__ == '__main__':
 
     # define the pygame sprite for the rocket launcher
     launcher_image = pygame.image.load("assets/rocket_launcher1.png")
-    launcher_image = pygame.transform.scale(launcher_image, [15, 35])
+    launcher_image = pygame.transform.scale(launcher_image, [70, 70])
 
     # create car and wep
-    car = Car(game, 20, init_pos, 250, 2000, 100, 100, 500, car_image)
-    wep1 = MachineGun(game, car, init_pos, 20, 10, 500, gun_image)
-    wep2 = RocketLauncher(game, car, init_pos, 20, 10, 500, launcher_image)
+    car = Car(game, 20, init_pos, 250, 2000, 100, 100, 500, (0, 0), car_image)
+    wep1 = MachineGun(game, car, init_pos, 20, 10, 500, (10, 10), gun_image)
+    wep2 = RocketLauncher(game, car, init_pos, 100, 60, 500, (0, -10), launcher_image)
 
     # add wep to car and car to game
-    car.set_weapon(wep1)
+    car.set_weapon(wep2)
     game.set_car(car)
 
     # add target

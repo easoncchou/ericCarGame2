@@ -73,7 +73,8 @@ class Projectile(PhysicsObject, GenericEntity):
         """
         outer_bound = 100
 
-        if self.pos[0] <= -outer_bound or self.pos[0] > MAP_WIDTH + outer_bound or self.pos[1] <= -outer_bound or self.pos[1] > MAP_HEIGHT + outer_bound:
+        if self.pos[0] <= -outer_bound or self.pos[0] > MAP_WIDTH + outer_bound or self.pos[1] <= -outer_bound or\
+                self.pos[1] > MAP_HEIGHT + outer_bound:
             self.delete()
 
     def update(self) -> None:

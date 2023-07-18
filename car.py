@@ -18,11 +18,12 @@ class Car(PhysicsObject, HealthEntity):
     vel: float
     a_pos: float
     a_vel: float
+    rot_off: tuple[int, int]
     sprite: Sprite
     wep: Weapon
 
     def __init__(self, game: 'Game', mass: int, pos: list[int], max_speed: int,
-                 acceleration: int, max_a_speed: int, handling: int, max_hp: int, image: pygame.image, poly=None) -> None:
+                 acceleration: int, max_a_speed: int, handling: int, max_hp: int, rot_off: tuple[int, int], image: pygame.image, poly=None) -> None:
         """
         Initializer
 
@@ -35,6 +36,7 @@ class Car(PhysicsObject, HealthEntity):
         self.sprite = Sprite(pos, image)
         self.max_a_speed = max_a_speed
         self.handling = handling
+        self.rot_off = rot_off
         self.wep = None
 
         # if poly is None, create polygon from rect
@@ -46,7 +48,7 @@ class Car(PhysicsObject, HealthEntity):
             poly = Polygon(vertices)
 
         PhysicsObject.__init__(self, mass, max_speed, acceleration, pos, poly)
-        HealthEntity.__init__(self, game, self.pos, self.sprite, max_hp)
+        HealthEntity.__init__(self, game, self.pos, self.sprite, max_hp, self.rot_off)
 
     def set_weapon(self, wep: Weapon) -> None:
         """

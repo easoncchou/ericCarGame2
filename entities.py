@@ -13,7 +13,7 @@ class GenericEntity:
     a_pos: float
     rot_off: tuple[int, int]
 
-    def __init__(self, game: 'Game', pos: list[int], sprite: Sprite):
+    def __init__(self, game: 'Game', pos: list[int], sprite: Sprite, rot_off: tuple[int, int]):
         """
         Initializer
         """
@@ -24,6 +24,7 @@ class GenericEntity:
         self.a_pos = 0
         self.game = game
         self.sprite = sprite
+        self.rot_off = rot_off
 
     def update_sprite(self) -> None:
         """
@@ -33,7 +34,8 @@ class GenericEntity:
         """
 
         self.sprite.image = pygame.transform.rotate(self.sprite.original_image, ((180 / math.pi) * self.a_pos))
-        self.sprite.rect = self.sprite.image.get_rect(center=self.sprite.image.get_rect(center=(self.pos[0], self.pos[1])).center)
+        self.sprite.rect = self.sprite.image.get_rect(center=self.sprite.image.get_rect(
+            center=(self.pos[0] + self.rot_off[0], self.pos[1] + self.rot_off[1])).center)
 
     def update(self) -> None:
         """
@@ -66,14 +68,14 @@ class HealthEntity(GenericEntity):
     max_hp: int
     hp: int
 
-    def __init__(self, game: 'Game', pos: list[int], sprite: Sprite, max_hp: int) -> None:
+    def __init__(self, game: 'Game', pos: list[int], sprite: Sprite, max_hp: int, rot_off: tuple[int, int]) -> None:
         """
         Initializer
 
         :param max_hp: max hp of this entity
         """
         pos = pos.copy()
-        GenericEntity.__init__(self, game, pos, sprite)
+        GenericEntity.__init__(self, game, pos, sprite, rot_off)
         self.max_hp = max_hp
         self.hp = max_hp
 

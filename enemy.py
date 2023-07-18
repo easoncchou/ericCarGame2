@@ -41,7 +41,7 @@ class Target(PhysicsObject, HealthEntity):
             poly = Polygon(vertices)
 
         PhysicsObject.__init__(self, 0, 0, 0, pos, poly)
-        HealthEntity.__init__(self, game, self.pos, self.sprite, max_hp)
+        HealthEntity.__init__(self, game, self.pos, self.sprite, max_hp, (0, 0))
 
     def update(self) -> None:
         """
