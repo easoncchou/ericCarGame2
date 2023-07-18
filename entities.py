@@ -1,4 +1,5 @@
 from game import *
+from sprite import *
 from physics_object import *
 
 
@@ -7,13 +8,15 @@ class GenericEntity:
     An entity with a sprite
     """
     game: 'Game'
+    sprite: 'Sprite'
 
-    def __init__(self, game: 'Game'):
+    def __init__(self, game: 'Game', sprite: Sprite):
         """
         Initializer
         """
 
         self.game = game
+        self.sprite = sprite
 
     def update(self) -> None:
         """
@@ -33,8 +36,6 @@ class GenericEntity:
 
         self.game.all_sprites_group.remove(self.sprite)
         self.game.ents.remove(self)
-        if isinstance(self, PhysicsObject):
-            self.game.phys_objs.remove(self)
 
 
 class HealthEntity(GenericEntity):
@@ -46,13 +47,13 @@ class HealthEntity(GenericEntity):
     max_hp: int
     hp: int
 
-    def __init__(self, game: 'Game', max_hp: int) -> None:
+    def __init__(self, game: 'Game', sprite: Sprite, max_hp: int) -> None:
         """
         Initializer
 
         :param max_hp: max hp of this entity
         """
-        GenericEntity.__init__(self, game)
+        GenericEntity.__init__(self, game, sprite)
         self.max_hp = max_hp
         self.hp = max_hp
 

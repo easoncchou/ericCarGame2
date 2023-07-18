@@ -41,7 +41,7 @@ class Target(PhysicsObject, HealthEntity):
             poly = Polygon(vertices)
 
         PhysicsObject.__init__(self, 0, 0, 0, pos, poly)
-        HealthEntity.__init__(self, game, max_hp)
+        HealthEntity.__init__(self, game, self.sprite, max_hp)
 
     def update(self) -> None:
         """
@@ -52,3 +52,13 @@ class Target(PhysicsObject, HealthEntity):
 
         if self.hp <= 0:
             self.delete()
+
+    def delete(self) -> None:
+        """
+        Deletes the entity from the game
+
+        :return: None
+        """
+
+        HealthEntity.delete(self)
+        self.game.enemies.remove(self)

@@ -44,7 +44,7 @@ class Weapon(GenericEntity):
         self.a_pos = math.pi
         self.pos = pos
 
-        GenericEntity.__init__(self, game)
+        GenericEntity.__init__(self, game, self.sprite)
 
     def update_sprite(self) -> None:
         """
@@ -99,7 +99,7 @@ class MachineGun(Weapon):
             new_proj = Bullet(self.game, self.damage, 5, self.pos, 2500, self.a_pos, bullet_image)
 
             self.game.ents.append(new_proj)
-            self.game.phys_objs.append(new_proj)
+            self.game.projs.append(new_proj)
             self.game.all_sprites_group.add(new_proj.sprite)
 
 
