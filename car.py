@@ -46,7 +46,7 @@ class Car(PhysicsObject, HealthEntity):
             poly = Polygon(vertices)
 
         PhysicsObject.__init__(self, mass, max_speed, acceleration, pos, poly)
-        HealthEntity.__init__(self, game, max_hp)
+        HealthEntity.__init__(self, game, self.sprite, max_hp)
 
     def set_weapon(self, wep: Weapon) -> None:
         """

@@ -45,7 +45,7 @@ class Projectile(PhysicsObject, GenericEntity):
                         self.sprite.rect.bottomleft]
             poly = Polygon(vertices)
 
-        GenericEntity.__init__(self, game)
+        GenericEntity.__init__(self, game, self.sprite)
         PhysicsObject.__init__(self, mass, speed, 0, pos, poly)
 
         self.vel = speed
@@ -85,6 +85,16 @@ class Projectile(PhysicsObject, GenericEntity):
         self.update_pos()
         self.update_sprite()
         self.check_bound_collision()
+
+    def delete(self) -> None:
+        """
+        Deletes the entity from the game
+
+        :return: None
+        """
+
+        GenericEntity.delete(self)
+        self.game.projs.remove(self)
 
 
 class Bullet(Projectile):
