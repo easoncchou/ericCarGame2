@@ -71,9 +71,9 @@ class Projectile(PhysicsObject, GenericEntity):
 
         :return: None
         """
-        OUTER_BOUND = 100
+        outer_bound = 100
 
-        if self.pos[0] <= -OUTER_BOUND or self.pos[0] > MAP_WIDTH + OUTER_BOUND or self.pos[1] <= -OUTER_BOUND or self.pos[1] > MAP_HEIGHT + OUTER_BOUND:
+        if self.pos[0] <= -outer_bound or self.pos[0] > MAP_WIDTH + outer_bound or self.pos[1] <= -outer_bound or self.pos[1] > MAP_HEIGHT + outer_bound:
             self.delete()
 
     def update(self) -> None:

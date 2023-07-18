@@ -65,7 +65,7 @@ class Weapon(GenericEntity):
         self.pos = self.car.pos
         self.update_sprite()
 
-    def shoot(self) -> Projectile:
+    def shoot(self) -> None:
         """
         Abstract class
         :return:
