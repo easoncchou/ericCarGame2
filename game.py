@@ -117,6 +117,13 @@ class Game:
             for ent in self.ents:
                 ent.update()
 
+            # check collision of enemies with projectiles
+            for enemy in self.enemies:
+                for proj in self.projs:
+                    if proj.collide(enemy):
+                        enemy.hp -= proj.damage
+                        proj.delete()
+
             # render
             self.screen.fill(GRASS_GREEN)
 
