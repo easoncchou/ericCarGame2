@@ -9,14 +9,31 @@ class GenericEntity:
     """
     game: 'Game'
     sprite: 'Sprite'
+    pos: list[int]
+    a_pos: float
+    rot_off: tuple[int, int]
 
-    def __init__(self, game: 'Game', sprite: Sprite):
+    def __init__(self, game: 'Game', pos: list[int], sprite: Sprite):
         """
         Initializer
         """
 
+        pos = pos.copy()
+
+        self.pos = pos
+        self.a_pos = 0
         self.game = game
         self.sprite = sprite
+
+    def update_sprite(self) -> None:
+        """
+        Update the sprite
+
+        :return: None
+        """
+
+        self.sprite.image = pygame.transform.rotate(self.sprite.original_image, ((180 / math.pi) * self.a_pos))
+        self.sprite.rect = self.sprite.image.get_rect(center=self.sprite.image.get_rect(center=(self.pos[0], self.pos[1])).center)
 
     def update(self) -> None:
         """
@@ -44,16 +61,19 @@ class HealthEntity(GenericEntity):
     """
 
     game: 'Game'
+    pos: list[int]
+    a_pos: float
     max_hp: int
     hp: int
 
-    def __init__(self, game: 'Game', sprite: Sprite, max_hp: int) -> None:
+    def __init__(self, game: 'Game', pos: list[int], sprite: Sprite, max_hp: int) -> None:
         """
         Initializer
 
         :param max_hp: max hp of this entity
         """
-        GenericEntity.__init__(self, game, sprite)
+        pos = pos.copy()
+        GenericEntity.__init__(self, game, pos, sprite)
         self.max_hp = max_hp
         self.hp = max_hp
 

@@ -46,7 +46,7 @@ class Car(PhysicsObject, HealthEntity):
             poly = Polygon(vertices)
 
         PhysicsObject.__init__(self, mass, max_speed, acceleration, pos, poly)
-        HealthEntity.__init__(self, game, self.sprite, max_hp)
+        HealthEntity.__init__(self, game, self.pos, self.sprite, max_hp)
 
     def set_weapon(self, wep: Weapon) -> None:
         """
@@ -81,16 +81,6 @@ class Car(PhysicsObject, HealthEntity):
         dth = a_vel * (1 / TICKRATE)
         self.a_pos += dth
         self.poly = rotate(self.poly, - dth * 180 / math.pi)
-
-    def update_sprite(self) -> None:
-        """
-        Update the sprite
-
-        :return: None
-        """
-
-        self.sprite.image = pygame.transform.rotate(self.sprite.original_image, ((180 / math.pi) * self.a_pos))
-        self.sprite.rect = self.sprite.image.get_rect(center=self.sprite.image.get_rect(center=(self.pos[0], self.pos[1])).center)
 
     def update(self) -> None:
         """
