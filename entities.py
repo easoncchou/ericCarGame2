@@ -70,6 +70,7 @@ class HealthEntity(GenericEntity):
     a_pos: float
     max_hp: int
     hp: int
+    hp_bar: 'HealthBar'
 
     def __init__(self, game: 'Game', pos: list[int], sprite: Sprite, max_hp: int, rot_off: tuple[int, int]) -> None:
         """
@@ -81,6 +82,7 @@ class HealthEntity(GenericEntity):
         GenericEntity.__init__(self, game, pos, sprite, rot_off)
         self.max_hp = max_hp
         self.hp = max_hp
+        self.hp_bar = HealthBar(self)
 
     def update(self) -> None:
         """
@@ -91,3 +93,57 @@ class HealthEntity(GenericEntity):
 
         if self.hp <= 0:
             self.game.ents.remove(self)
+
+
+class HealthBar(GenericEntity):
+    """
+    A drawn bar visualizing health remaining / max health of a HealthEntity
+    """
+
+    health_entity: HealthEntity
+    total_length: int
+    current_length: int
+    width: int
+    x_position: int
+    y_position: int
+
+    def __init__(self, health_entity: HealthEntity):
+        """
+
+        :param health_entity: an instance of a HealthEntity
+        """
+
+        self.health_entity = health_entity
+        self.total_length = 80
+        self.height = 10
+        image = pygame.Surface([self.total_length, self.height])
+        image.fill(RED)
+        new_pos = [self.health_entity.pos[0], self.health_entity.pos[1] - self.health_entity.sprite.rect.h / 1.4]
+        self.sprite = Sprite(new_pos, image)
+
+        # add the health bar to the sprite group
+        self.health_entity.game.all_sprites_group.add(self.sprite)
+
+        GenericEntity.__init__(self, health_entity.game, new_pos, self.sprite, (0, 0))
+
+    def update(self) -> None:
+        """
+        Update the information regarding the health bar
+
+        :return: None
+        """
+
+        percentage_health = self.health_entity.hp / self.health_entity.max_hp
+        length = percentage_health * self.total_length
+
+        pygame.draw.rect(self.sprite.image, GREEN, [0, 0, length, self.height])
+
+
+
+
+
+
+
+
+
+

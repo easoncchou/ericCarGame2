@@ -125,7 +125,7 @@ class Game:
                         proj.delete()
 
             # render
-            self.screen.fill(GRASS_GREEN)
+            self.screen.fill(WHITE)
 
             # debug draw polygon todo remove later
             polygon_vertices = list(self.car.poly.exterior.coords)
@@ -144,6 +144,11 @@ class Game:
             offset_rotated = wep.rot_off.rotate(-((180 / math.pi) * wep.a_pos))
 
             pygame.draw.circle(self.screen, RED, wep.pos + offset_rotated, 5)
+
+            for ent in self.enemies:
+                ent.hp_bar.update()
+
+
 
             # update display
             pygame.display.flip()
