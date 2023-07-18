@@ -123,7 +123,7 @@ class Game:
                     # check if it's a projectile collision
                     if isinstance(obj1, Projectile):
                         obj1: Projectile
-                        if isinstance(obj2, HealthEntity):
+                        if isinstance(obj2, HealthEntity) and obj2 is not self.car:
                             obj2: HealthEntity
                             obj2.hp -= obj1.damage
                             obj1.delete()
@@ -132,7 +132,7 @@ class Game:
                     # check if it's a projectile collision
                     elif isinstance(obj2, Projectile):
                         obj2: Projectile
-                        if isinstance(obj1, HealthEntity):
+                        if isinstance(obj1, HealthEntity) and obj1 is not self.car:
                             obj1: HealthEntity
                             obj1.hp -= obj2.damage
                             obj2.delete()

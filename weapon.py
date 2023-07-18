@@ -90,7 +90,6 @@ class MachineGun(Weapon):
         Shoots a bullet in the guns current direction
         :return:
         """
-
         if self.curr_atk_cd <= 0:
             self.curr_atk_cd = self.atk_cd
 

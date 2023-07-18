@@ -47,6 +47,7 @@ class Projectile(PhysicsObject, GenericEntity):
 
         GenericEntity.__init__(self, game)
         PhysicsObject.__init__(self, mass, speed, 0, pos, poly)
+
         self.vel = speed
         self.a_pos = a_pos
 
