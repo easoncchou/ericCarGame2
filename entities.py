@@ -1,3 +1,5 @@
+import pygame.math
+
 from game import *
 from sprite import *
 from physics_object import *
@@ -11,7 +13,7 @@ class GenericEntity:
     sprite: 'Sprite'
     pos: list[int]
     a_pos: float
-    rot_off: tuple[int, int]
+    rot_off: pygame.math.Vector2
 
     def __init__(self, game: 'Game', pos: list[int], sprite: Sprite, rot_off: tuple[int, int]):
         """
@@ -24,7 +26,7 @@ class GenericEntity:
         self.a_pos = 0
         self.game = game
         self.sprite = sprite
-        self.rot_off = rot_off
+        self.rot_off = pygame.math.Vector2(rot_off)
 
     def update_sprite(self) -> None:
         """
@@ -34,8 +36,9 @@ class GenericEntity:
         """
 
         self.sprite.image = pygame.transform.rotate(self.sprite.original_image, ((180 / math.pi) * self.a_pos))
-        self.sprite.rect = self.sprite.image.get_rect(center=self.sprite.image.get_rect(
-            center=(self.pos[0] + self.rot_off[0], self.pos[1] + self.rot_off[1])).center)
+
+        offset_rotated = self.rot_off.rotate(-((180 / math.pi) * self.a_pos))
+        self.sprite.rect = self.sprite.image.get_rect(center=self.pos + offset_rotated)
 
     def update(self) -> None:
         """

@@ -46,7 +46,7 @@ class Projectile(PhysicsObject, GenericEntity):
             poly = Polygon(vertices)
 
         PhysicsObject.__init__(self, mass, speed, 0, pos, poly)
-        GenericEntity.__init__(self, game, self.pos, self.sprite)
+        GenericEntity.__init__(self, game, self.pos, self.sprite, (0, 0))
 
         self.vel = speed
         self.a_pos = a_pos

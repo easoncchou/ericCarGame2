@@ -25,7 +25,7 @@ if __name__ == '__main__':
     # create car and wep
     car = Car(game, 20, init_pos, 250, 2000, 100, 100, 500, (0, 0), car_image)
     wep1 = MachineGun(game, car, init_pos, 20, 10, 500, (10, 10), gun_image)
-    wep2 = RocketLauncher(game, car, init_pos, 100, 60, 500, (0, -10), launcher_image)
+    wep2 = RocketLauncher(game, car, init_pos, 100, 60, 500, (0, 18), launcher_image)
 
     # add wep to car and car to game
     car.set_weapon(wep2)

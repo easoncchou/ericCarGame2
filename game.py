@@ -139,6 +139,12 @@ class Game:
             self.all_sprites_group.update()
             self.all_sprites_group.draw(self.screen)
 
+            wep = self.car.wep
+
+            offset_rotated = wep.rot_off.rotate(-((180 / math.pi) * wep.a_pos))
+
+            pygame.draw.circle(self.screen, RED, wep.pos + offset_rotated, 5)
+
             # update display
             pygame.display.flip()
             self.clock.tick(60)

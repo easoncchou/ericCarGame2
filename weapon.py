@@ -21,7 +21,7 @@ class Weapon(GenericEntity):
     sprite: Sprite          # sprite for the weapon
     a_pos: float            # direction the weapon is facing
     pos: list[int]          # position of the weapon in x y coordinates
-    rot_off: tuple[int]     # offset for the pivot of rotation for the sprite
+    rot_off: tuple[int, int]     # offset for the pivot of rotation for the sprite
 
     def __init__(self, game: 'Game', car: 'Car', pos: list[int], damage: float, atk_cd: int, ammo: float,
                  rot_off: tuple[int, int], image: pygame.image):
