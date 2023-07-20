@@ -1,9 +1,8 @@
 from game import *
-from entities import *
-from physics_object import *
-from sprite import *
 from weapon import *
 from entities import *
+from sprite import *
+from physics_object import *
 
 
 class Car(PhysicsObject, HealthEntity):

@@ -1,8 +1,7 @@
-from entities import HealthEntity
 from game import *
+from entities import *
 from sprite import *
 from physics_object import *
-from entities import *
 
 
 class Target(PhysicsObject, HealthEntity):
