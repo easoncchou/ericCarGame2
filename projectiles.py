@@ -105,3 +105,22 @@ class Rocket(Projectile):
     """
     Projectile fired by a rocket launcher
     """
+
+    target: HealthEntity
+    accuracy: int       # how well a rocket can adjust its trajectory in order to hit the target
+
+    def __int__(self, game: 'Game', damage: float, mass: int, pos: list[int], speed: int, a_pos: float,
+                image: pygame.image, target: HealthEntity, accuracy: int, poly=None):
+        super().__init__(game, damage, mass, pos, speed, a_pos, image)
+
+        self.target = target
+        self.accuracy = accuracy
+
+    def track(self) -> None:
+        """
+        adjust the trajectory of the rocket based on the target's current position
+
+        :return: None
+        """
+
+

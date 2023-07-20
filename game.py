@@ -199,6 +199,9 @@ class Game:
                 if new_proj is not None:
                     self.add_proj(new_proj)
 
+            if isinstance(self.car.wep, RocketLauncher):
+                self.car.wep.select_target()
+
             # update all entities
             for ent in self.ents:
                 ent.update()

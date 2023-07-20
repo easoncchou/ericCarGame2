@@ -138,6 +138,30 @@ class HealthBar(GenericEntity):
         pygame.draw.rect(self.sprite.image, GREEN, [0, 0, length, self.h])
 
 
+class Reticle(GenericEntity):
+    """
+    A reticle spawned when a rocket launcher selects a target. The Reticle will follow the targeted Enemy.
+    """
+    def __init__(self, game: 'Game', pos: [int, int], sprite: Sprite, current_target: HealthEntity):
+        super().__init__(game, pos, sprite, (0, 0))
+        self.game.ents.append(self)
+        self.game.all_sprites_group.add(self.sprite)
+        self.current_target = current_target
+
+    def update(self) -> None:
+        """
+        Update the position of the reticle
+
+        :return: None
+        """
+
+        self.pos = [self.current_target.pos[0], self.current_target.pos[1]]
+        self.update_sprite()
+
+        if self.current_target.hp <= 0:
+            self.delete()
+
+
 
 
 
