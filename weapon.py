@@ -176,7 +176,7 @@ class RocketLauncher(Weapon):
                     else:
                         self.targeting_status += 1
             else:
-                if self.targeting_status == OFF:
+                if self.targeting_status == OFF and self.reticle in self.game.ents:
                     self.reticle.delete()
                 self.targeting_status = 0
                 self.potential_target = None

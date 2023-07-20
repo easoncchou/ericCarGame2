@@ -166,6 +166,9 @@ class Reticle(GenericEntity):
         self.pos = [self.current_target.pos[0], self.current_target.pos[1]]
         self.update_sprite()
 
+        if self.current_target.hp <= 0:
+            self.delete()
+
 
 
 
