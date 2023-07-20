@@ -3,6 +3,7 @@ from weapon import *
 from entities import *
 from sprite import *
 from physics_object import *
+from weapon import Weapon
 
 
 class Car(PhysicsObject, HealthEntity):
@@ -19,7 +20,7 @@ class Car(PhysicsObject, HealthEntity):
     a_vel: float
     rot_off: pygame.math.Vector2
     sprite: Sprite
-    wep: Weapon
+    wep: 'Weapon'
 
     def __init__(self, game: 'Game', mass: int, pos: list[int], max_speed: int,
                  acceleration: int, max_a_speed: int, handling: int, max_hp: int, rot_off: tuple[int, int], image: pygame.image, poly=None) -> None:

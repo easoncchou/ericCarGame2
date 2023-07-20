@@ -1,7 +1,9 @@
 import itertools
+import pymunk
+import pygame
 
 from entities import *
-from car import *
+from car_2 import *
 from projectiles import *
 from enemy import *
 from physics_object import *
@@ -15,9 +17,10 @@ class Game:
     done: whether the game loop is done
     """
 
+    space: pymunk.Space
     done: bool
     size: tuple[int, int]
-    car: Car
+    car: Car2
     ents: list[GenericEntity]
     enemies: list[HealthEntity]
     projs: list[Projectile]
@@ -31,6 +34,8 @@ class Game:
         """
 
         pygame.init()
+        self.space = pymunk.Space()
+        self.space.damping = 0.9
 
         self.done = False
         self.size = (width, height)
@@ -45,7 +50,7 @@ class Game:
 
         # can set title later
 
-    def set_car(self, car: Car) -> None:
+    def set_car(self, car: Car2) -> None:
         """
         Adds a car to self.cars
 
@@ -87,15 +92,41 @@ class Game:
             #   better to handle this way to account for holding down key
             #   presses
             keys = pygame.key.get_pressed()
+            """
+            
             if keys[pygame.K_w]:
-                self.car.apply_force_tan(UP)
-                # TODO change from car
+                force = pymunk.Vec2d(0, 1000)
+                point = pymunk.Vec2d(0, -30)
+                self.car.body.apply_force_at_local_point(force, point)
             if keys[pygame.K_s]:
-                self.car.apply_force_tan(DOWN)
+                force = pymunk.Vec2d(0, -1000)
+                point = pymunk.Vec2d(0, -30)
+                self.car.body.apply_force_at_local_point(force, point)
             if keys[pygame.K_d]:
-                self.car.steer_car(RIGHT)
+                force = pymunk.Vec2d(-5000, -100)
+                point = pymunk.Vec2d(-5, 30)
+                pivot = pymunk.Vec2d(0, -30)
+                self.car.body.apply_force_at_local_point(force, point)
+                self.car.body.apply_force_at_local_point(-force, pivot)
             if keys[pygame.K_a]:
-                self.car.steer_car(LEFT)
+                force = pymunk.Vec2d(5000, -100)
+                point = pymunk.Vec2d(5, 30)
+                pivot = pymunk.Vec2d(0, -30)
+                self.car.body.apply_force_at_local_point(force, point)
+                self.car.body.apply_force_at_local_point(-force, pivot)
+                """
+            if keys[pygame.K_w]:
+                self.car.accelerate(100000)
+            if keys[pygame.K_s]:
+                self.car.accelerate(-100000)
+
+            th = 0
+            if keys[pygame.K_d]:
+                th += math.pi / 8
+            if keys[pygame.K_a]:
+                th -= math.pi / 8
+
+            self.car.steer(th)
 
             # handle mouse
             x, y = pygame.mouse.get_pos()
@@ -124,25 +155,26 @@ class Game:
                         enemy.hp -= proj.damage
                         proj.delete()
 
+            # tick physics
+            for i in range(16):
+                self.space.step(1 / 60 / 16)
+
             # render
             self.screen.fill(WHITE)
 
-            # debug draw polygon todo remove later
-            polygon_vertices = list(self.car.poly.exterior.coords)
-            pygame.draw.polygon(self.screen, RED, polygon_vertices)
-
             # debug speedometer todo remove later
             font = pygame.font.SysFont(None, 48)
-            img = font.render(str(round(self.car.vel, 1)), True, BLUE)
+            img = font.render(str(round(abs(self.car.body.velocity), 1)), True, BLUE)
             self.screen.blit(img, (MAP_WIDTH - 120, MAP_HEIGHT - 80))
 
             self.all_sprites_group.update()
             self.all_sprites_group.draw(self.screen)
 
-            # debug draw centre of rotation for wep
-            wep = self.car.wep
-            offset_rotated = wep.rot_off.rotate(-((180 / math.pi) * wep.a_pos))
-            pygame.draw.circle(self.screen, RED, wep.pos, 1)
+            pygame.draw.circle(self.screen, RED, self.car.front_wheel.position, 2)
+            pygame.draw.circle(self.screen, GREEN, self.car.back_wheel.position, 2)
+            pygame.draw.line(self.screen, GREEN, self.car.front_wheel.position,
+                             self.car.front_wheel.position + pymunk.Vec2d(0, 20).rotated(self.car.front_wheel.angle))
+            pygame.draw.line(self.screen, BLUE, self.car.front_wheel_groove.groove_a, self.car.front_wheel_groove.groove_b)
 
             # update display
             pygame.display.flip()
