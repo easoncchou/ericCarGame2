@@ -122,9 +122,9 @@ class Game:
 
             th = 0
             if keys[pygame.K_d]:
-                th += math.pi / 8
+                th += math.pi / 4
             if keys[pygame.K_a]:
-                th -= math.pi / 8
+                th -= math.pi / 4
 
             self.car.steer(th)
 
@@ -170,6 +170,7 @@ class Game:
             self.all_sprites_group.update()
             self.all_sprites_group.draw(self.screen)
 
+            # debug draw car wheels/dir
             pygame.draw.circle(self.screen, RED, self.car.front_wheel.position, 2)
             pygame.draw.circle(self.screen, GREEN, self.car.back_wheel.position, 2)
             pygame.draw.line(self.screen, GREEN, self.car.front_wheel.position,
