@@ -19,12 +19,12 @@ class Target(HealthEntity):
 
     def __init__(self, pos: pymunk.Vec2d, max_hp: int, image: pygame.image, poly=None):
         """
+        Initializer
 
-        :param game:
-        :param pos:
-        :param max_hp:
-        :param image:
-        :param poly:
+        :param pos: initial position
+        :param max_hp: max health
+        :param image: image
+        :param poly: polygon
         """
 
         HealthEntity.__init__(self, Sprite(pos, image), max_hp, pos)

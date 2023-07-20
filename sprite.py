@@ -15,7 +15,7 @@ class Sprite(pygame.sprite.Sprite):
         :param image: image
         """
         # Call superclass constructor
-        super().__init__()
+        pygame.sprite.Sprite.__init__(self)
 
         # Image
         self.image = image
