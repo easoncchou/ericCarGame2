@@ -1,24 +1,23 @@
-from game import *
-from entities import *
-from sprite import *
-from physics_object import *
+import pymunk
+import pygame
+
+from constants import *
+from entities import HealthEntity
+from sprite import Sprite
 
 
-class Target(PhysicsObject, HealthEntity):
+class Target(HealthEntity):
     """
     A stationary target with hp
     """
 
-    game: 'Game'
-    mass: int
-    poly: Polygon
-    pos: list[int, int]
-    vel: float
-    a_pos: float
-    max_speed: int
-    acceleration: int
+    body: pymunk.Body
+    shape: pymunk.Shape
+    sprite: Sprite
+    max_hp: int
+    hp: int
 
-    def __init__(self, game: 'Game', pos: list[int], max_hp: int, image: pygame.image, poly=None):
+    def __init__(self, pos: pymunk.Vec2d, max_hp: int, image: pygame.image, poly=None):
         """
 
         :param game:
@@ -28,19 +27,34 @@ class Target(PhysicsObject, HealthEntity):
         :param poly:
         """
 
-        pos = pos.copy()
+        HealthEntity.__init__(self, Sprite(pos, image), max_hp, pos)
 
-        HealthEntity.__init__(self, game, pos, Sprite(pos, image), max_hp, (0, 0))
-
-        # if poly is None, create polygon from rect
         if poly is None:
-            vertices = [self.sprite.rect.topleft,
-                        self.sprite.rect.topright,
-                        self.sprite.rect.bottomright,
-                        self.sprite.rect.bottomleft]
-            poly = Polygon(vertices)
+            vertices = [self.sprite.rect.topleft - self.pos,
+                        self.sprite.rect.topright - self.pos,
+                        self.sprite.rect.bottomright - self.pos,
+                        self.sprite.rect.bottomleft - self.pos]
+        else:
+            vertices = poly.exterior.coords
 
-        PhysicsObject.__init__(self, 0, 0, 0, pos, poly)
+        body = pymunk.Body(1000, 100000)
+        body.position = pos
+        shape = pymunk.Poly(body, vertices)
+        shape.collision_type = COLL_ENEM
+
+        self.body = body
+        self.shape = shape
+
+    def update_sprite(self) -> None:
+        """
+        Update the sprite
+
+        :return: None
+        """
+
+        self.sprite.image = pygame.transform.rotate(self.sprite.original_image,
+                                                    -self.body.rotation_vector.angle_degrees)
+        self.sprite.rect = self.sprite.image.get_rect(center=self.body.position)
 
     def update(self) -> None:
         """
@@ -49,15 +63,6 @@ class Target(PhysicsObject, HealthEntity):
         :return: None
         """
 
-        if self.hp <= 0:
-            self.delete()
-
-    def delete(self) -> None:
-        """
-        Deletes the entity from the game
-
-        :return: None
-        """
-
-        HealthEntity.delete(self)
-        self.game.enemies.remove(self)
+        self.pos = self.body.position
+        HealthEntity.update(self)
+        self.update_sprite()

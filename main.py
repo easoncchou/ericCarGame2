@@ -1,4 +1,11 @@
-from game import *
+import pygame
+import pymunk
+
+from constants import *
+from game import Game
+from car_2 import Car2
+from enemy import Target
+from weapon import MachineGun, RocketLauncher
 
 
 if __name__ == '__main__':
@@ -12,7 +19,7 @@ if __name__ == '__main__':
         car_image,
         (40, 75),
     )
-    init_pos = [100, 100]
+    init_pos = pymunk.Vec2d(100, 100)
 
     # define the pygame sprite for the machine gun
     gun_image = pygame.image.load("assets/machine_gun1.png")
@@ -23,18 +30,18 @@ if __name__ == '__main__':
     launcher_image = pygame.transform.scale(launcher_image, [70, 70])
 
     # create car and wep
-    car = Car2(game, 100, init_pos, 250, car_image)
-    wep1 = MachineGun(game, car, init_pos, 20, 10, 500, (10, 10), gun_image)
-    wep2 = RocketLauncher(game, car, init_pos, 100, 60, 500, (0, 18), launcher_image)
+    car = Car2(game.space, 100, init_pos, 250, car_image)
+    wep1 = MachineGun(init_pos, 20, 10, 500, (10, 10), gun_image)
+    wep2 = RocketLauncher(init_pos, 100, 60, 500, (0, 18), launcher_image)
 
     # add wep to car and car to game
-    car.set_weapon(wep2)
+    car.set_weapon(wep1)
     game.set_car(car)
 
     # add target
     target_image = pygame.surface.Surface((50, 50))
     target_image.fill(RED)
-    target = Target(game, [400, 400], 500, target_image)
+    target = Target(pymunk.Vec2d(400, 400), 500, target_image)
 
     game.add_target(target)
 

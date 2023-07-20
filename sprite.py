@@ -1,4 +1,5 @@
 import pygame
+import pymunk
 
 
 class Sprite(pygame.sprite.Sprite):
@@ -6,7 +7,7 @@ class Sprite(pygame.sprite.Sprite):
     PyGame Sprite class
     """
 
-    def __init__(self, pos: list[int, int], image: pygame.image):
+    def __init__(self, pos: pymunk.Vec2d, image: pygame.image):
         """
         Initializer
 
@@ -23,7 +24,7 @@ class Sprite(pygame.sprite.Sprite):
         self.image = self.image.convert_alpha()
 
         # set the position of the center of the image to pos[]
-        self.rect = self.image.get_rect(center=self.image.get_rect(center=(pos[0], pos[1])).center)
+        self.rect = self.image.get_rect(center=self.image.get_rect(center=pos).center)
 
         # keep the original image for updating orientation using pygame.transform.rotate
         self.original_image = self.image

@@ -1,25 +1,24 @@
-from game import *
-from entities import *
-from sprite import *
-from physics_object import *
+import pymunk
+import pygame
+
+from constants import *
+from entities import GenericEntity
+from sprite import Sprite
 
 
-class Projectile(PhysicsObject, GenericEntity):
+class Projectile(GenericEntity):
     """
     Projectile fired from a weapon
     """
 
-    game: 'Game'
+    body: pymunk.Body
+    shape: pymunk.Shape
     damage: float
     mass: int
-    poly: Polygon
-    pos: list[int, int]
-    vel: float
-    a_pos: float
-    max_speed: int
-    acceleration: int
+    pos: pymunk.Vec2d
 
-    def __init__(self, game: 'Game', damage: float, mass: int, pos: list[int], speed: int, a_pos: float, image: pygame.image, poly=None) -> None:
+    def __init__(self, damage: float, pos: pymunk.Vec2d, speed: int,
+                 a_pos: float, image: pygame.image, poly=None) -> None:
         """
         Initializer
 
@@ -33,27 +32,32 @@ class Projectile(PhysicsObject, GenericEntity):
         :param poly: polygon representing the shape of the projectile, rectangle by default
         """
 
-        pos = pos.copy()
+        GenericEntity.__init__(self, Sprite(pos, image), pos, a_pos)
 
-        GenericEntity.__init__(self, game, pos, Sprite(pos, image), (0, 0))
+        pos = pymunk.Vec2d(pos[0], pos[1])
 
-        # if poly is None, create polygon from rect
         if poly is None:
-            vertices = [self.sprite.rect.topleft,
-                        self.sprite.rect.topright,
-                        self.sprite.rect.bottomright,
-                        self.sprite.rect.bottomleft]
-            poly = Polygon(vertices)
+            vertices = [self.sprite.rect.topleft - self.pos,
+                        self.sprite.rect.topright - self.pos,
+                        self.sprite.rect.bottomright - self.pos,
+                        self.sprite.rect.bottomleft - self.pos]
+        else:
+            vertices = poly.exterior.coords
 
-        PhysicsObject.__init__(self, mass, speed, 0, pos, poly)
+        body = pymunk.Body(0.1, 1000)
+        body.position = pos
+        body.velocity = pymunk.Vec2d(0, speed).rotated(-a_pos)
+        body.angle = -a_pos
+        shape = pymunk.Poly(body, vertices)
+        shape.collision_type = COLL_PROJ
 
-        self.vel = speed
-        self.a_pos = a_pos
-
+        self.body = body
+        self.shape = shape
         self.damage = damage
 
         # rotate the sprite to match the weapon
-        self.sprite.image = pygame.transform.rotate(self.sprite.original_image, ((180 / math.pi) * self.a_pos))
+        self.sprite.image = pygame.transform.rotate(self.sprite.original_image,
+                                                    -self.body.rotation_vector.angle_degrees)
 
     def update_sprite(self) -> None:
         """
@@ -62,9 +66,9 @@ class Projectile(PhysicsObject, GenericEntity):
         :return: None
         """
 
-        self.sprite.rect = self.sprite.image.get_rect(center=self.sprite.image.get_rect(center=(self.pos[0], self.pos[1])).center)
+        self.sprite.rect = self.sprite.image.get_rect(center=self.body.position)
 
-    def check_bound_collision(self) -> None:
+    def collide_bounds(self) -> None:
         """
         Checks if the projectile is out of bounds
 
@@ -72,9 +76,10 @@ class Projectile(PhysicsObject, GenericEntity):
         """
         outer_bound = 100
 
-        if self.pos[0] <= -outer_bound or self.pos[0] > MAP_WIDTH + outer_bound or self.pos[1] <= -outer_bound or\
-                self.pos[1] > MAP_HEIGHT + outer_bound:
-            self.delete()
+        return self.body.position.x <= -outer_bound or \
+            self.body.position.x > MAP_WIDTH + outer_bound or \
+            self.body.position.y <= -outer_bound or \
+            self.body.position.y > MAP_HEIGHT + outer_bound
 
     def update(self) -> None:
         """
@@ -82,19 +87,7 @@ class Projectile(PhysicsObject, GenericEntity):
         :return: None
         """
 
-        self.update_pos()
         self.update_sprite()
-        self.check_bound_collision()
-
-    def delete(self) -> None:
-        """
-        Deletes the entity from the game
-
-        :return: None
-        """
-
-        GenericEntity.delete(self)
-        self.game.projs.remove(self)
 
 
 class Bullet(Projectile):
@@ -113,4 +106,3 @@ class Rocket(Projectile):
     """
     Projectile fired by a rocket launcher
     """
-
