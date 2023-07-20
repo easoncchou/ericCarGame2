@@ -1,10 +1,10 @@
 import itertools
 
-from car import *
 from entities import *
-from physics_object import *
+from car import *
 from projectiles import *
 from enemy import *
+from physics_object import *
 
 
 class Game:

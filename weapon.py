@@ -1,10 +1,10 @@
 import math
 
+from car import *
+from game import *
+from projectiles import *
 from entities import GenericEntity
 from sprite import *
-from projectiles import *
-from game import *
-from car import *
 
 
 class Weapon(GenericEntity):
