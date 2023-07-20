@@ -113,6 +113,9 @@ class Game:
             if m_buttons[0]:
                 self.car.wep.shoot()
 
+            if isinstance(self.car.wep, RocketLauncher):
+                self.car.wep.select_target()
+
             # update all entities
             for ent in self.ents:
                 ent.update()
