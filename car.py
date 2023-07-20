@@ -18,7 +18,7 @@ class Car(PhysicsObject, HealthEntity):
     vel: float
     a_pos: float
     a_vel: float
-    rot_off: tuple[int, int]
+    rot_off: pygame.math.Vector2
     sprite: Sprite
     wep: Weapon
 
@@ -33,11 +33,9 @@ class Car(PhysicsObject, HealthEntity):
         :param poly: polygon representing the shape of the car, rectangle by default
         """
 
-        self.sprite = Sprite(pos, image)
-        self.max_a_speed = max_a_speed
-        self.handling = handling
-        self.rot_off = rot_off
-        self.wep = None
+        pos = pos.copy()
+
+        HealthEntity.__init__(self, game, pos, Sprite(pos, image), max_hp, rot_off)
 
         # if poly is None, create polygon from rect
         if poly is None:
@@ -48,7 +46,10 @@ class Car(PhysicsObject, HealthEntity):
             poly = Polygon(vertices)
 
         PhysicsObject.__init__(self, mass, max_speed, acceleration, pos, poly)
-        HealthEntity.__init__(self, game, self.pos, self.sprite, max_hp, self.rot_off)
+
+        self.max_a_speed = max_a_speed
+        self.handling = handling
+        self.wep = None
 
     def set_weapon(self, wep: Weapon) -> None:
         """

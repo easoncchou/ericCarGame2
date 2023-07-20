@@ -21,7 +21,7 @@ class Weapon(GenericEntity):
     sprite: Sprite          # sprite for the weapon
     a_pos: float            # direction the weapon is facing
     pos: list[int]          # position of the weapon in x y coordinates
-    rot_off: tuple[int, int]     # offset for the pivot of rotation for the sprite
+    rot_off: pygame.math.Vector2     # offset for the pivot of rotation for the sprite
 
     def __init__(self, game: 'Game', car: 'Car', pos: list[int], damage: float, atk_cd: int, ammo: float,
                  rot_off: tuple[int, int], image: pygame.image):
@@ -42,12 +42,9 @@ class Weapon(GenericEntity):
         self.atk_cd = atk_cd
         self.curr_atk_cd = 0
         self.ammo = ammo
-        self.sprite = Sprite(pos, image)
         self.a_pos = math.pi
-        self.pos = pos
-        self.rot_off = rot_off
 
-        GenericEntity.__init__(self, game, self.pos, self.sprite, self.rot_off)
+        GenericEntity.__init__(self, game, pos, Sprite(pos, image), rot_off)
 
     def update(self) -> None:
         """

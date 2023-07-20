@@ -30,7 +30,8 @@ class Target(PhysicsObject, HealthEntity):
         """
 
         pos = pos.copy()
-        self.sprite = Sprite(pos, image)
+
+        HealthEntity.__init__(self, game, pos, Sprite(pos, image), max_hp, (0, 0))
 
         # if poly is None, create polygon from rect
         if poly is None:
@@ -41,7 +42,6 @@ class Target(PhysicsObject, HealthEntity):
             poly = Polygon(vertices)
 
         PhysicsObject.__init__(self, 0, 0, 0, pos, poly)
-        HealthEntity.__init__(self, game, self.pos, self.sprite, max_hp, (0, 0))
 
     def update(self) -> None:
         """

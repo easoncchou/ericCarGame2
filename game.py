@@ -139,11 +139,10 @@ class Game:
             self.all_sprites_group.update()
             self.all_sprites_group.draw(self.screen)
 
+            # debug draw centre of rotation for wep
             wep = self.car.wep
-
             offset_rotated = wep.rot_off.rotate(-((180 / math.pi) * wep.a_pos))
-
-            pygame.draw.circle(self.screen, RED, wep.pos + offset_rotated, 5)
+            pygame.draw.circle(self.screen, RED, wep.pos, 1)
 
             # update display
             pygame.display.flip()
