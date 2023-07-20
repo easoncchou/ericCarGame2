@@ -1,26 +1,25 @@
-import itertools
 import pymunk
+import pymunk.pygame_util
 import pygame
+import math
+from typing import Union
 
-from entities import *
-from car_2 import *
-from projectiles import *
-from enemy import *
-from physics_object import *
+from constants import *
+from entities import GenericEntity, HealthEntity
+from car_2 import Car2
+from projectiles import Projectile
+from enemy import Target
 
 
 class Game:
     """
     Game class containing the game loop
-
-    === Attributes ===
-    done: whether the game loop is done
     """
 
     space: pymunk.Space
     done: bool
     size: tuple[int, int]
-    car: Car2
+    car: Union[Car2, None]
     ents: list[GenericEntity]
     enemies: list[HealthEntity]
     projs: list[Projectile]
@@ -61,19 +60,80 @@ class Game:
         self.car = car
         self.all_sprites_group.add(car.sprite)
         self.all_sprites_group.add(car.wep.sprite)
-
         self.ents.append(car)
+
+        self.add_entity(car.hp_bar)
+
+    def add_entity(self, ent: GenericEntity) -> None:
+        """
+        Add an Entity
+
+        :param ent: Entity to add
+        :return:
+        """
+        self.all_sprites_group.add(ent.sprite)
+        self.ents.append(ent)
+
+    def delete_entity(self, ent: GenericEntity) -> None:
+        """
+        Delete an Entity
+
+        :param ent: Entity to remove
+        :return: None
+        """
+
+        self.all_sprites_group.remove(ent.sprite)
+        self.ents.remove(ent)
 
     def add_target(self, target: Target) -> None:
         """
-        Adds a target to shoot at
+        Add a Target
 
-        :param target: target object to add
+        :param target: Target to add
+        :return: None
+        """
+
+        self.add_entity(target)
+        self.enemies.append(target)
+        self.space.add(target.body, target.shape)
+
+        self.add_entity(target.hp_bar)
+
+    def delete_target(self, target: Target) -> None:
+        """
+        Delete the Target
+
+        :param target: Target to delete
         :return:
         """
-        self.all_sprites_group.add(target.sprite)
-        self.ents.append(target)
-        self.enemies.append(target)
+
+        self.delete_entity(target)
+        self.enemies.remove(target)
+        self.space.remove(target.body, target.shape)
+
+    def add_proj(self, proj: Projectile) -> None:
+        """
+        Add a Projectile
+
+        :param proj: Projectile to add
+        :return:
+        """
+
+        self.add_entity(proj)
+        self.projs.append(proj)
+        self.space.add(proj.body, proj.shape)
+
+    def delete_proj(self, proj: Projectile) -> None:
+        """
+        Delete a Projectile
+
+        :param proj: Projectile to delete
+        :return:
+        """
+
+        self.delete_entity(proj)
+        self.projs.remove(proj)
+        self.space.remove(proj.body, proj.shape)
 
     def run_game_loop(self) -> None:
         """
@@ -92,29 +152,7 @@ class Game:
             #   better to handle this way to account for holding down key
             #   presses
             keys = pygame.key.get_pressed()
-            """
-            
-            if keys[pygame.K_w]:
-                force = pymunk.Vec2d(0, 1000)
-                point = pymunk.Vec2d(0, -30)
-                self.car.body.apply_force_at_local_point(force, point)
-            if keys[pygame.K_s]:
-                force = pymunk.Vec2d(0, -1000)
-                point = pymunk.Vec2d(0, -30)
-                self.car.body.apply_force_at_local_point(force, point)
-            if keys[pygame.K_d]:
-                force = pymunk.Vec2d(-5000, -100)
-                point = pymunk.Vec2d(-5, 30)
-                pivot = pymunk.Vec2d(0, -30)
-                self.car.body.apply_force_at_local_point(force, point)
-                self.car.body.apply_force_at_local_point(-force, pivot)
-            if keys[pygame.K_a]:
-                force = pymunk.Vec2d(5000, -100)
-                point = pymunk.Vec2d(5, 30)
-                pivot = pymunk.Vec2d(0, -30)
-                self.car.body.apply_force_at_local_point(force, point)
-                self.car.body.apply_force_at_local_point(-force, pivot)
-                """
+
             if keys[pygame.K_w]:
                 self.car.accelerate(100000)
             if keys[pygame.K_s]:
@@ -142,40 +180,54 @@ class Game:
 
             m_buttons = pygame.mouse.get_pressed()
             if m_buttons[0]:
-                self.car.wep.shoot()
+                new_proj = self.car.wep.shoot()
+                if new_proj is not None:
+                    self.add_proj(new_proj)
 
             # update all entities
             for ent in self.ents:
                 ent.update()
 
-            # check collision of enemies with projectiles
-            for enemy in self.enemies:
+                if isinstance(ent, Projectile):
+                    if ent.collide_bounds():
+                        self.delete_proj(ent)
+                elif isinstance(ent, Target):
+                    if ent.hp <= 0:
+                        self.delete_target(ent)
+                        self.delete_entity(ent.hp_bar)
+
+            # collision handler
+            def hit(arbiter, space, data):
                 for proj in self.projs:
-                    if proj.collide(enemy):
-                        enemy.hp -= proj.damage
-                        proj.delete()
+                    if proj.shape == arbiter.shapes[0]:
+                        for enemy in self.enemies:
+                            if enemy.shape == arbiter.shapes[1]:
+                                enemy.hp -= proj.damage
+
+                        self.delete_proj(proj)
+
+                return True
+
+            h = self.space.add_collision_handler(COLL_PROJ, COLL_ENEM)
+            h.begin = hit
 
             # tick physics
             for i in range(16):
-                self.space.step(1 / 60 / 16)
+                self.space.step(1 / TICKRATE / 16)
 
             # render
             self.screen.fill(WHITE)
 
             # debug speedometer todo remove later
             font = pygame.font.SysFont(None, 48)
-            img = font.render(str(round(abs(self.car.body.velocity), 1)), True, BLUE)
+            img = font.render(str(round(abs(self.car.car_body.velocity), 1)), True, BLUE)
             self.screen.blit(img, (MAP_WIDTH - 120, MAP_HEIGHT - 80))
 
             self.all_sprites_group.update()
             self.all_sprites_group.draw(self.screen)
 
-            # debug draw car wheels/dir
-            pygame.draw.circle(self.screen, RED, self.car.front_wheel.position, 2)
-            pygame.draw.circle(self.screen, GREEN, self.car.back_wheel.position, 2)
-            pygame.draw.line(self.screen, GREEN, self.car.front_wheel.position,
-                             self.car.front_wheel.position + pymunk.Vec2d(0, 20).rotated(self.car.front_wheel.angle))
-            pygame.draw.line(self.screen, BLUE, self.car.front_wheel_groove.groove_a, self.car.front_wheel_groove.groove_b)
+            options = pymunk.pygame_util.DrawOptions(self.screen)
+            self.space.debug_draw(options)
 
             # update display
             pygame.display.flip()
