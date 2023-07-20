@@ -145,11 +145,6 @@ class Game:
 
             pygame.draw.circle(self.screen, RED, wep.pos + offset_rotated, 5)
 
-            for ent in self.enemies:
-                ent.hp_bar.update()
-
-
-
             # update display
             pygame.display.flip()
             self.clock.tick(60)

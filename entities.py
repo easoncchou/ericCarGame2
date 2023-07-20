@@ -116,15 +116,15 @@ class HealthBar(GenericEntity):
         self.health_entity = health_entity
         self.total_length = 80
         self.height = 10
+
         image = pygame.Surface([self.total_length, self.height])
         image.fill(RED)
         new_pos = [self.health_entity.pos[0], self.health_entity.pos[1] - self.health_entity.sprite.rect.h / 1.4]
-        self.sprite = Sprite(new_pos, image)
+        GenericEntity.__init__(self, health_entity.game, new_pos, Sprite(new_pos, image), (0, 0))
 
         # add the health bar to the sprite group
-        self.health_entity.game.all_sprites_group.add(self.sprite)
-
-        GenericEntity.__init__(self, health_entity.game, new_pos, self.sprite, (0, 0))
+        self.game.ents.append(self)
+        self.game.all_sprites_group.add(self.sprite)
 
     def update(self) -> None:
         """
@@ -136,7 +136,14 @@ class HealthBar(GenericEntity):
         percentage_health = self.health_entity.hp / self.health_entity.max_hp
         length = percentage_health * self.total_length
 
+        self.sprite.image.fill(RED)
+        self.pos = [self.health_entity.pos[0], self.health_entity.pos[1] - self.health_entity.sprite.rect.h / 1.4]
+        self.update_sprite()
+
         pygame.draw.rect(self.sprite.image, GREEN, [0, 0, length, self.height])
+
+        if self.health_entity.hp <= 0:
+            self.delete()
 
 
 
