@@ -36,6 +36,21 @@ class Game:
         self.space = pymunk.Space()
         self.space.damping = 0.9
 
+        # collision handler
+        def hit(arbiter, space, data):
+            for proj in self.projs:
+                if proj.shape == arbiter.shapes[0]:
+                    for enemy in self.enemies:
+                        if enemy.shape == arbiter.shapes[1]:
+                            enemy.hp -= proj.damage
+
+                    self.delete_proj(proj)
+
+            return True
+
+        h = self.space.add_collision_handler(COLL_PROJ, COLL_ENEM)
+        h.begin = hit
+
         self.done = False
         self.size = (width, height)
         self.screen = pygame.display.set_mode(self.size)
@@ -195,21 +210,6 @@ class Game:
                     if ent.hp <= 0:
                         self.delete_target(ent)
                         self.delete_entity(ent.hp_bar)
-
-            # collision handler
-            def hit(arbiter, space, data):
-                for proj in self.projs:
-                    if proj.shape == arbiter.shapes[0]:
-                        for enemy in self.enemies:
-                            if enemy.shape == arbiter.shapes[1]:
-                                enemy.hp -= proj.damage
-
-                        self.delete_proj(proj)
-
-                return True
-
-            h = self.space.add_collision_handler(COLL_PROJ, COLL_ENEM)
-            h.begin = hit
 
             # tick physics
             for i in range(16):

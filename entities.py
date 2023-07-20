@@ -90,12 +90,12 @@ class HealthBar(GenericEntity):
     A drawn bar visualizing health remaining / max health of a HealthEntity
     """
 
+    sprite: 'Sprite'
+    pos: pymunk.Vec2d
+    a_pos: float
     health_entity: HealthEntity
-    total_length: int
-    current_length: int
-    width: int
-    x_position: int
-    y_position: int
+    w: int
+    h: int
 
     def __init__(self, health_entity: HealthEntity):
         """
@@ -104,10 +104,10 @@ class HealthBar(GenericEntity):
         """
 
         self.health_entity = health_entity
-        self.total_length = 80
-        self.height = 10
+        self.w = 80
+        self.h = 10
 
-        image = pygame.Surface([self.total_length, self.height])
+        image = pygame.Surface([self.w, self.h])
         image.fill(RED)
         new_pos = pymunk.Vec2d(self.health_entity.pos[0], self.health_entity.pos[1] - self.health_entity.sprite.rect.h / 1.4)
         GenericEntity.__init__(self, Sprite(new_pos, image), new_pos)
@@ -129,13 +129,13 @@ class HealthBar(GenericEntity):
         """
 
         percentage_health = self.health_entity.hp / self.health_entity.max_hp
-        length = percentage_health * self.total_length
+        length = percentage_health * self.w
 
         self.sprite.image.fill(RED)
         self.pos = pymunk.Vec2d(self.health_entity.pos[0], self.health_entity.pos[1] - self.health_entity.sprite.rect.h / 1.4)
         self.update_sprite()
 
-        pygame.draw.rect(self.sprite.image, GREEN, [0, 0, length, self.height])
+        pygame.draw.rect(self.sprite.image, GREEN, [0, 0, length, self.h])
 
 
 

@@ -14,7 +14,6 @@ class Projectile(GenericEntity):
     body: pymunk.Body
     shape: pymunk.Shape
     damage: float
-    mass: int
     pos: pymunk.Vec2d
 
     def __init__(self, damage: float, pos: pymunk.Vec2d, speed: int,
