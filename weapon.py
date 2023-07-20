@@ -1,6 +1,6 @@
 import math
 
-from car import *
+from car_2 import *
 from game import *
 from projectiles import *
 from entities import GenericEntity
