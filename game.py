@@ -239,6 +239,10 @@ class Game:
         :return:
         """
 
+        # tick physics
+        for i in range(16):
+            self.space.step(1 / TICKRATE / 16)
+
         # update all entities
         for ent in self.ents:
             ent.update()
@@ -254,10 +258,6 @@ class Game:
         if self.reticle is not None and self.reticle.current_target.hp <= 0:
             if self.reticle in self.ents:
                 self.delete_entity(self.reticle)
-
-        # tick physics
-        for i in range(16):
-            self.space.step(1 / TICKRATE / 16)
 
     def handle_input(self) -> None:
         """
