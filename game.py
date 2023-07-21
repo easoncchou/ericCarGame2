@@ -209,7 +209,7 @@ class Game:
                     if self.car.wep.targeting_status == 0:
                         self.car.wep.current_target = enemy
         else:
-            if abs(pymunk.Vec2d(x, y) - self.car.wep.current_target.pos) < 100000:
+            if abs(pymunk.Vec2d(x, y) - self.car.wep.current_target.pos) < 150:
                 # the target has been followed by the mouse for long enough, so set it to the current target
                 #   and reset the timer on targeting status
                 if self.car.wep.targeting_status == OFF:
