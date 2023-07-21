@@ -130,5 +130,6 @@ class RocketLauncher(Weapon):
                           750,
                           self.a_pos,
                           rocket_image,
-                          self.current_target,
+                          None if self.targeting_status != OFF else self.current_target,
                           0.05)
+

@@ -1,5 +1,6 @@
 import pymunk
 import pygame
+import math
 
 from constants import *
 from entities import GenericEntity, HealthEntity
@@ -135,5 +136,46 @@ class Rocket(Projectile):
 
         :return: None
         """
+
+        rocket_angle = - (self.body.angle + math.pi / 2)
+
+        displacement_vec = (self.target.pos - self.pos)
+
+        displacement_angle = (math.pi - displacement_vec.angle)
+
+        difference_angle = (displacement_angle - rocket_angle) % (2 * math.pi)
+
+        if difference_angle > math.pi:
+            self.body.angle -= self.tracking / 2
+            self.body.velocity = self.body.velocity.rotated(- (self.tracking / 2))
+        elif difference_angle == math.pi:
+            pass
+        else:
+            self.body.angle += self.tracking / 2
+            self.body.velocity = self.body.velocity.rotated(self.tracking / 2)
+
+    def update(self) -> None:
+        """
+        Updates the rocket every tick and adjusts its body angle based on the track function
+        :return: None
+        """
+
+        self.pos = self.body.position
+        Projectile.update(self)
+        if self.target is not None:
+            self.track()
+
+    def update_sprite(self) -> None:
+        """
+        Update the orientation of the sprite
+
+        :return:
+        """
+
+        Projectile.update_sprite(self)
+        self.sprite.image = pygame.transform.rotate(self.sprite.original_image,
+                                                    -self.body.rotation_vector.angle_degrees)
+
+
 
 

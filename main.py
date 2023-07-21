@@ -35,13 +35,13 @@ if __name__ == '__main__':
     wep2 = RocketLauncher(init_pos, 100, 60, 500, (0, 18), launcher_image)
 
     # add wep to car and car to game
-    car.set_weapon(wep1)
+    car.set_weapon(wep2)
     game.set_car(car)
 
     # add target
     target_image = pygame.surface.Surface((50, 50))
     target_image.fill(RED)
-    target = Target(pymunk.Vec2d(400, 400), 500, target_image)
+    target = Target(pymunk.Vec2d(400, 400), 100000, target_image)
 
     game.add_target(target)
 

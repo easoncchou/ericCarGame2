@@ -188,6 +188,11 @@ class Game:
             img = font.render('back', True, BLUE)
             self.screen.blit(img, (MAP_WIDTH - 120, MAP_HEIGHT - 160))
 
+        font = pygame.font.SysFont(None, 48)
+        working_angle = - 1 * (self.car.car_body.angle + math.pi / 2)
+        img = font.render(str(round(working_angle, 4)), True, BLUE)
+        self.screen.blit(img, (MAP_WIDTH - 120, MAP_HEIGHT - 200))
+
         # update display
         pygame.display.flip()
 
@@ -197,23 +202,20 @@ class Game:
         :return: None
         """
 
-        if self.car.wep.potential_target is None:
+        if self.car.wep.current_target is None:
             for enemy in self.enemies:
                 # check if the mouse is within a radius of the enemy
                 if abs(pymunk.Vec2d(x, y) - enemy.pos) < 100:
-                    # if no current target is being tracked, set this close enemy to the potential target
                     if self.car.wep.targeting_status == 0:
-                        self.car.wep.potential_target = enemy
+                        self.car.wep.current_target = enemy
         else:
-            if abs(pymunk.Vec2d(x, y) - self.car.wep.potential_target.pos) < 100:
+            if abs(pymunk.Vec2d(x, y) - self.car.wep.current_target.pos) < 100000:
                 # the target has been followed by the mouse for long enough, so set it to the current target
                 #   and reset the timer on targeting status
                 if self.car.wep.targeting_status == OFF:
                     pass
                 elif self.car.wep.targeting_status >= 100:
-                    self.car.wep.current_target = self.car.wep.potential_target
                     self.car.wep.targeting_status = OFF
-                    print("TARGET LOCKED XDD!\n")
 
                     if self.reticle is None:
                         reticle_image = pygame.image.load("assets/reticle1.png")
@@ -234,8 +236,7 @@ class Game:
                     self.delete_entity(self.reticle)
                     pass
                 self.car.wep.targeting_status = 0
-                self.car.wep.potential_target = None
-                print("target lost noob...")
+                self.car.wep.current_target = None
 
     def update(self) -> None:
         """
