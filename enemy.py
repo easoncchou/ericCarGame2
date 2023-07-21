@@ -37,13 +37,13 @@ class Target(HealthEntity):
         else:
             vertices = poly.exterior.coords
 
-        body = pymunk.Body(1000, 100000)
-        body.position = pos
-        shape = pymunk.Poly(body, vertices)
-        shape.collision_type = COLL_ENEM
+        self.body = pymunk.Body(1000, 100000)
+        self.body.position = pos
 
-        self.body = body
-        self.shape = shape
+        self.shape = pymunk.Poly(self.body, vertices)
+        self.shape.collision_type = COLL_ENEM
+
+        self.shape.ent = self
 
     def update_sprite(self) -> None:
         """

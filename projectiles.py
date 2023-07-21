@@ -34,7 +34,7 @@ class Projectile(GenericEntity):
 
         GenericEntity.__init__(self, Sprite(pos, image), pos, a_pos)
 
-        pos = pymunk.Vec2d(pos[0], pos[1])
+        self.damage = damage
 
         if poly is None:
             vertices = [self.sprite.rect.topleft - self.pos,
@@ -44,20 +44,15 @@ class Projectile(GenericEntity):
         else:
             vertices = poly.exterior.coords
 
-        body = pymunk.Body(0.1, 1000)
-        body.position = pos
-        body.velocity = pymunk.Vec2d(0, speed).rotated(-a_pos)
-        body.angle = -a_pos
-        shape = pymunk.Poly(body, vertices)
-        shape.collision_type = COLL_PROJ
+        self.body = pymunk.Body(0.1, 1000)
+        self.body.position = pos
+        self.body.velocity = pymunk.Vec2d(0, speed).rotated(-a_pos)
+        self.body.angle = -a_pos
 
-        self.body = body
-        self.shape = shape
-        self.damage = damage
+        self.shape = pymunk.Poly(self.body, vertices)
+        self.shape.collision_type = COLL_PROJ
 
-        # rotate the sprite to match the weapon
-        self.sprite.image = pygame.transform.rotate(self.sprite.original_image,
-                                                    -self.body.rotation_vector.angle_degrees)
+        self.shape.ent = self
 
     def update_sprite(self) -> None:
         """
@@ -66,6 +61,8 @@ class Projectile(GenericEntity):
         :return: None
         """
 
+        self.sprite.image = pygame.transform.rotate(self.sprite.original_image,
+                                                    -self.body.rotation_vector.angle_degrees)
         self.sprite.rect = self.sprite.image.get_rect(center=self.body.position)
 
     def collide_bounds(self) -> None:
@@ -111,7 +108,7 @@ class Rocket(Projectile):
     tracking: float       # how well a rocket can adjust its trajectory in order to hit the target
 
     def __init__(self, damage: float, pos: pymunk.Vec2d, speed: int, a_pos: float,
-                image: pygame.image, target: HealthEntity, tracking: float, poly=None):
+                 image: pygame.image, target: HealthEntity, tracking: float, poly=None):
         """
         Initializer
 
@@ -138,11 +135,8 @@ class Rocket(Projectile):
         """
 
         rocket_angle = - (self.body.angle + math.pi / 2)
-
         displacement_vec = (self.target.pos - self.pos)
-
         displacement_angle = (math.pi - displacement_vec.angle)
-
         difference_angle = (displacement_angle - rocket_angle) % (2 * math.pi)
 
         if difference_angle > math.pi:
@@ -164,17 +158,6 @@ class Rocket(Projectile):
         Projectile.update(self)
         if self.target is not None:
             self.track()
-
-    def update_sprite(self) -> None:
-        """
-        Update the orientation of the sprite
-
-        :return:
-        """
-
-        Projectile.update_sprite(self)
-        self.sprite.image = pygame.transform.rotate(self.sprite.original_image,
-                                                    -self.body.rotation_vector.angle_degrees)
 
 
 

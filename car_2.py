@@ -39,7 +39,7 @@ class Car2(HealthEntity):
 
         self.wep = None
         self.steering_angle = 0
-        self.max_steering = math.pi / 4
+        self.max_steering = math.pi / 6
 
         self.space = space
 
@@ -97,9 +97,9 @@ class Car2(HealthEntity):
         """
 
         if self.steering_angle > self.max_steering:
-            self.front_wheel.angle = self.max_steering
-        elif self.steering_angle < self.max_steering:
-            self.front_wheel.angle = self.max_steering
+            self.steering_angle = self.max_steering
+        elif self.steering_angle < -self.max_steering:
+            self.steering_angle = -self.max_steering
 
         # move the front wheel angle to the correct position gradually
         if self.steering_angle < th:
@@ -179,7 +179,6 @@ class Car2(HealthEntity):
 
         HealthEntity.update(self)
         self.pos = self.body.position
-        self.back_wheel.angle = self.body.angle
         self.update_grooves()
         self.update_sprite()
         self.wep.update()

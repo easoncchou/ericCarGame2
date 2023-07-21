@@ -40,13 +40,12 @@ class Game:
 
         # collision handler
         def hit(arbiter, space, data):
-            for proj in self.projs:
-                if proj.shape == arbiter.shapes[0]:
-                    for enemy in self.enemies:
-                        if enemy.shape == arbiter.shapes[1]:
-                            enemy.hp -= proj.damage
+            # neat trick, if we add an attribute to the pymunk.Shape attribute in the enemy and proj initializer, we can get the entities associated easily
+            proj = arbiter.shapes[0].ent
+            enemy = arbiter.shapes[1].ent
 
-                    self.delete_proj(proj)
+            enemy.hp -= proj.damage
+            self.delete_proj(proj)
 
             return True
 
@@ -292,14 +291,7 @@ class Game:
         # handle mouse
         x, y = pygame.mouse.get_pos()
 
-        try:
-            if y - self.car.pos[1] >= 0:
-                self.car.wep.a_pos = math.atan((x - self.car.pos[0]) / (y - self.car.pos[1]))
-            else:
-                self.car.wep.a_pos = math.pi + math.atan((x - self.car.pos[0]) / (y - self.car.pos[1]))
-        except ZeroDivisionError:
-            # if there's a zero division error, then do nothing
-            pass
+        self.car.wep.a_pos = -(pymunk.Vec2d(x, y) - self.car.pos).angle + math.pi / 2
 
         # if the cars current weapon is a rocket launcher, start tracking
         if isinstance(self.car.wep, RocketLauncher):
@@ -317,7 +309,6 @@ class Game:
 
         :return: None
         """
-
         while not self.done:
             self.handle_input()
 

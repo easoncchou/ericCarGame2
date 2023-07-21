@@ -6,6 +6,7 @@ from game import Game
 from car_2 import Car2
 from enemy import Target, MovingTarget
 from weapon import MachineGun, RocketLauncher
+from projectiles import Bullet
 
 
 if __name__ == '__main__':
@@ -41,9 +42,10 @@ if __name__ == '__main__':
     # add target
     target_image = pygame.surface.Surface((50, 50))
     target_image.fill(RED)
-    target = MovingTarget(pymunk.Vec2d(200, 200), pymunk.Vec2d(500, 500), 1500, target_image)
+    target = Target(pymunk.Vec2d(200, 200), 1500, target_image)
+    m_target = MovingTarget(pymunk.Vec2d(200, 200), pymunk.Vec2d(500, 500), 1500, target_image)
 
-    game.add_target(target)
+    game.add_target(m_target)
 
     # run game
     game.run_game_loop()
