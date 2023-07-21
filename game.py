@@ -163,11 +163,6 @@ class Game:
         # render
         self.screen.fill(WHITE)
 
-        # debug speedometer todo remove later
-        font = pygame.font.SysFont(None, 48)
-        img = font.render(str(round(abs(self.car.car_body.velocity), 1)), True, BLUE)
-        self.screen.blit(img, (MAP_WIDTH - 120, MAP_HEIGHT - 80))
-
         self.all_sprites_group.update()
         self.all_sprites_group.draw(self.screen)
 
@@ -175,22 +170,22 @@ class Game:
         options = pymunk.pygame_util.DrawOptions(self.screen)
         self.space.debug_draw(options)
 
-        body_a = (-self.car.car_body.angle) % (2 * math.pi)
+        # debug speedometer todo remove later
+        font = pygame.font.SysFont(None, 48)
+        img = font.render(str(round(abs(self.car.body.velocity), 1)), True, BLUE)
+        self.screen.blit(img, (MAP_WIDTH - 120, MAP_HEIGHT - 80))
 
-        body_v = (math.pi / 2 - self.car.car_body.velocity.angle) % (2 * math.pi)
+        body_a = (-self.car.body.rotation_vector.angle) % (2 * math.pi)
+        body_v = (math.pi / 2 - self.car.body.velocity.angle) % (2 * math.pi)
 
         if abs(body_a - body_v) < math.pi / 2:
-            font = pygame.font.SysFont(None, 48)
             img = font.render('front', True, BLUE)
             self.screen.blit(img, (MAP_WIDTH - 120, MAP_HEIGHT - 160))
         else:
-            font = pygame.font.SysFont(None, 48)
             img = font.render('back', True, BLUE)
             self.screen.blit(img, (MAP_WIDTH - 120, MAP_HEIGHT - 160))
 
-        font = pygame.font.SysFont(None, 48)
-        working_angle = - 1 * (self.car.car_body.angle + math.pi / 2)
-        img = font.render(str(round(working_angle, 4)), True, BLUE)
+        img = font.render(str(round(self.car.body.rotation_vector.angle, 4)), True, BLUE)
         self.screen.blit(img, (MAP_WIDTH - 120, MAP_HEIGHT - 200))
 
         # update display
@@ -282,9 +277,9 @@ class Game:
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_w]:
-            self.car.accelerate(100000)
+            self.car.accelerate(10 ** 6)
         if keys[pygame.K_s]:
-            self.car.accelerate(-100000)
+            self.car.accelerate(-10 ** 6)
 
         th = 0
         if keys[pygame.K_d]:

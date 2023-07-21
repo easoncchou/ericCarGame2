@@ -14,8 +14,8 @@ class Car2(HealthEntity):
     """
 
     space: pymunk.Space
-    car_body: pymunk.Body
-    car_body_shape: pymunk.Shape
+    body: pymunk.Body
+    shape: pymunk.Shape
     front_wheel = pymunk.Body
     back_wheel = pymunk.Body
     front_wheel_groove: pymunk.GrooveJoint
@@ -38,6 +38,7 @@ class Car2(HealthEntity):
         HealthEntity.__init__(self, Sprite(pos, image), max_hp, pos)
 
         self.wep = None
+        self.steering_angle = 0
         self.max_steering = math.pi / 4
 
         self.space = space
@@ -50,64 +51,32 @@ class Car2(HealthEntity):
         else:
             vertices = poly.exterior.coords
 
-        moment = pymunk.moment_for_poly(mass, vertices)
+        # make moment extra large to simulate proper movement
+        moment = pymunk.moment_for_poly(mass, vertices) * 20
 
-        car_body = pymunk.Body(mass, moment)
-        car_body.position = pos
-        car_body_shape = pymunk.Poly(car_body, vertices)
+        self.body = pymunk.Body(mass, moment)
+        self.body.position = pos
+        self.shape = pymunk.Poly(self.body, vertices)
 
-        # set it to a very high moment so that it simulates front/back movement
-        front_wheel = pymunk.Body(1, 166666)
-        # set the position of the front wheel
-        front_wheel.position = pos + pymunk.Vec2d(0, 40)
-        # use a square to simulate the contact between the wheel/ground
-        front_wheel_shape = pymunk.Circle(front_wheel, 0)
-
-        # set it to a very high moment so that it simulates front/back movement
-        back_wheel = pymunk.Body(1, 166666)
-        # set the position of the front wheel
-        back_wheel.position = pos + pymunk.Vec2d(0, -40)
-        # use a square to simulate the contact between the wheel/ground
-        back_wheel_shape = pymunk.Circle(back_wheel, 0)
-
-        # attach wheel to the body with a pivot joint
-        front_pivot = pymunk.PivotJoint(car_body, front_wheel, front_wheel.position)
-        back_pivot = pymunk.PivotJoint(car_body, back_wheel, back_wheel.position)
+        self.front_pivot_point = pymunk.Vec2d(0, 30)
+        self.back_pivot_point = pymunk.Vec2d(0, -30)
 
         # create groove joints
-        front_wheel_groove = pymunk.GrooveJoint(self.space.static_body,
-                                                front_wheel,
-                                                front_wheel.position - pymunk.Vec2d(0, 20).rotated(front_wheel.angle),
-                                                front_wheel.position + pymunk.Vec2d(0, 20).rotated(front_wheel.angle),
-                                                (0, 0))
+        self.front_wheel_groove = pymunk.GrooveJoint(self.space.static_body,
+                                                     self.body,
+                                                     self.body.position + self.front_pivot_point - pymunk.Vec2d(0, 20).rotated(self.steering_angle),
+                                                     self.body.position + self.front_pivot_point + pymunk.Vec2d(0, 20).rotated(self.steering_angle),
+                                                     self.front_pivot_point)
 
-        back_wheel_groove = pymunk.GrooveJoint(self.space.static_body,
-                                               back_wheel,
-                                               back_wheel.position - pymunk.Vec2d(0, 20).rotated(back_wheel.angle),
-                                               back_wheel.position + pymunk.Vec2d(0, 20).rotated(back_wheel.angle),
-                                               (0, 0))
+        self.back_wheel_groove = pymunk.GrooveJoint(self.space.static_body,
+                                                    self.body,
+                                                    self.body.position + self.back_pivot_point - pymunk.Vec2d(0, 20).rotated(self.steering_angle),
+                                                    self.body.position + self.back_pivot_point + pymunk.Vec2d(0, 20).rotated(self.steering_angle),
+                                                    self.back_pivot_point)
 
-        self.car_body = car_body
-        self.car_body_shape = car_body_shape
-
-        self.front_wheel = front_wheel
-        # self.front_wheel_shape = front_wheel_shape
-        self.back_wheel = back_wheel
-        # self.back_wheel_shape = back_wheel_shape
-
-        # self.front_pivot = front_pivot
-        # self.back_pivot = back_pivot
-        self.front_wheel_groove = front_wheel_groove
-        self.back_wheel_groove = back_wheel_groove
-
-        # add everything to the space
-        self.space.add(car_body, car_body_shape)
-        self.space.add(front_wheel, front_wheel_shape)
-        self.space.add(back_wheel, back_wheel_shape)
-        self.space.add(front_pivot)
-        self.space.add(back_pivot)
-        self.space.add(front_wheel_groove)
-        self.space.add(back_wheel_groove)
+        self.space.add(self.body, self.shape)
+        self.space.add(self.front_wheel_groove)
+        self.space.add(self.back_wheel_groove)
 
     def set_weapon(self, wep: Weapon) -> None:
         """
@@ -127,16 +96,16 @@ class Car2(HealthEntity):
         :return: None
         """
 
-        if self.front_wheel.angle > self.car_body.angle + self.max_steering:
-            self.front_wheel.angle = self.car_body.angle + self.max_steering
-        elif self.front_wheel.angle < self.car_body.angle - self.max_steering:
-            self.front_wheel.angle = self.car_body.angle - self.max_steering
+        if self.steering_angle > self.max_steering:
+            self.front_wheel.angle = self.max_steering
+        elif self.steering_angle < self.max_steering:
+            self.front_wheel.angle = self.max_steering
 
         # move the front wheel angle to the correct position gradually
-        if self.front_wheel.angle < self.car_body.angle + th:
-            self.front_wheel.angle += 0.03
+        if self.steering_angle < th:
+            self.steering_angle += 0.03
         else:
-            self.front_wheel.angle -= 0.03
+            self.steering_angle -= 0.03
 
     def accelerate(self, mag: float) -> None:
         """
@@ -148,24 +117,22 @@ class Car2(HealthEntity):
 
         # apply a force to the back wheel (RWD)
 
-        body_a = (-self.car_body.angle) % (2 * math.pi)
-
-        body_v = (math.pi / 2 - self.car_body.velocity.angle) % (2 * math.pi)
+        body_a = (-self.body.rotation_vector.angle) % (2 * math.pi)
+        body_v = (math.pi / 2 - self.body.velocity.angle) % (2 * math.pi)
 
         if abs(body_a - body_v) < math.pi / 2:
             # going forward
             if mag > 0:
-                self.back_wheel.apply_force_at_local_point((0, mag))
+                self.body.apply_force_at_local_point((0, mag), self.back_pivot_point)
             else:
-                self.back_wheel.apply_force_at_local_point((0, 5 * mag))
+                self.body.apply_force_at_local_point((0, 5 * mag), self.back_pivot_point)
 
         else:
             # going backwards
             if mag > 0:
-                self.back_wheel.apply_force_at_local_point((0, 5 * mag))
+                self.body.apply_force_at_local_point((0, 5 * mag), self.back_pivot_point)
             else:
-                self.back_wheel.apply_force_at_local_point((0, mag))
-
+                self.body.apply_force_at_local_point((0, mag), self.back_pivot_point)
 
     def update_grooves(self) -> None:
         """
@@ -176,19 +143,18 @@ class Car2(HealthEntity):
         # remove the grooves
         self.space.remove(self.front_wheel_groove)
         self.space.remove(self.back_wheel_groove)
-
-        # modify the grooves
+        # create groove joints
         self.front_wheel_groove = pymunk.GrooveJoint(self.space.static_body,
-                                                     self.front_wheel,
-                                                     self.front_wheel.position - pymunk.Vec2d(0, 20).rotated(self.front_wheel.angle),
-                                                     self.front_wheel.position + pymunk.Vec2d(0, 20).rotated(self.front_wheel.angle),
-                                                     (0, 0))
+                                                     self.body,
+                                                     self.body.position + self.front_pivot_point.rotated(self.body.rotation_vector.angle) - pymunk.Vec2d(0, 20).rotated(self.steering_angle + self.body.rotation_vector.angle),
+                                                     self.body.position + self.front_pivot_point.rotated(self.body.rotation_vector.angle) + pymunk.Vec2d(0, 20).rotated(self.steering_angle + self.body.rotation_vector.angle),
+                                                     self.front_pivot_point)
 
         self.back_wheel_groove = pymunk.GrooveJoint(self.space.static_body,
-                                                    self.back_wheel,
-                                                    self.back_wheel.position - pymunk.Vec2d(0, 20).rotated(self.back_wheel.angle),
-                                                    self.back_wheel.position + pymunk.Vec2d(0, 20).rotated(self.back_wheel.angle),
-                                                    (0, 0))
+                                                    self.body,
+                                                    self.body.position + self.back_pivot_point.rotated(self.body.rotation_vector.angle) - pymunk.Vec2d(0, 20).rotated(self.body.rotation_vector.angle),
+                                                    self.body.position + self.back_pivot_point.rotated(self.body.rotation_vector.angle) + pymunk.Vec2d(0, 20).rotated(self.body.rotation_vector.angle),
+                                                    self.back_pivot_point)
 
         # replace the grooves
         self.space.add(self.front_wheel_groove)
@@ -202,8 +168,8 @@ class Car2(HealthEntity):
         """
 
         self.sprite.image = pygame.transform.rotate(self.sprite.original_image,
-                                                    -self.car_body.rotation_vector.angle_degrees)
-        self.sprite.rect = self.sprite.image.get_rect(center=self.car_body.position)
+                                                    -self.body.rotation_vector.angle_degrees)
+        self.sprite.rect = self.sprite.image.get_rect(center=self.body.position)
 
     def update(self) -> None:
         """
@@ -212,8 +178,8 @@ class Car2(HealthEntity):
         """
 
         HealthEntity.update(self)
-        self.pos = self.car_body.position
-        self.back_wheel.angle = self.car_body.angle
+        self.pos = self.body.position
+        self.back_wheel.angle = self.body.angle
         self.update_grooves()
         self.update_sprite()
         self.wep.update()

@@ -102,7 +102,7 @@ class MovingTarget(Target):
         self.body.velocity = (self.dest - self.body.position).normalized() * self.speed
 
         # if the current position gets close enough to the destination
-        if abs(self.body.position - self.dest) <= self.speed:
+        if abs(self.body.position - self.dest) <= 1:
             # switch the points
             if self.dest == self.p_a:
                 self.dest = self.p_b
