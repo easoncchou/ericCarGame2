@@ -1,5 +1,6 @@
 import pymunk
 import pygame
+import math
 
 from weapon import Weapon
 from entities import HealthEntity
@@ -137,7 +138,25 @@ class Car2(HealthEntity):
         """
 
         # apply a force to the back wheel (RWD)
-        self.back_wheel.apply_force_at_local_point((0, mag))
+
+        body_a = (-self.car_body.angle) % (2 * math.pi)
+
+        body_v = (math.pi / 2 - self.car_body.velocity.angle) % (2 * math.pi)
+
+        if abs(body_a - body_v) < math.pi / 2:
+            # going forward
+            if mag > 0:
+                self.back_wheel.apply_force_at_local_point((0, mag))
+            else:
+                self.back_wheel.apply_force_at_local_point((0, 5 * mag))
+
+        else:
+            # going backwards
+            if mag > 0:
+                self.back_wheel.apply_force_at_local_point((0, 5 * mag))
+            else:
+                self.back_wheel.apply_force_at_local_point((0, mag))
+
 
     def update_grooves(self) -> None:
         """

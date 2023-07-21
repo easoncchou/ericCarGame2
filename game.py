@@ -175,6 +175,19 @@ class Game:
         options = pymunk.pygame_util.DrawOptions(self.screen)
         self.space.debug_draw(options)
 
+        body_a = (-self.car.car_body.angle) % (2 * math.pi)
+
+        body_v = (math.pi / 2 - self.car.car_body.velocity.angle) % (2 * math.pi)
+
+        if abs(body_a - body_v) < math.pi / 2:
+            font = pygame.font.SysFont(None, 48)
+            img = font.render('front', True, BLUE)
+            self.screen.blit(img, (MAP_WIDTH - 120, MAP_HEIGHT - 160))
+        else:
+            font = pygame.font.SysFont(None, 48)
+            img = font.render('back', True, BLUE)
+            self.screen.blit(img, (MAP_WIDTH - 120, MAP_HEIGHT - 160))
+
         # update display
         pygame.display.flip()
 
