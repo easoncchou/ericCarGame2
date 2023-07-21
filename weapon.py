@@ -21,6 +21,7 @@ class Weapon(GenericEntity):
     ammo: float             # when ammo runs out, can't shoot
     sprite: Sprite          # sprite for the weapon
     a_pos: float            # direction the weapon is facing
+    barrel_len: int         # barrel length
     rot_off: pygame.math.Vector2     # offset for the pivot of rotation for the sprite
 
     def __init__(self, pos: pymunk.Vec2d, damage: float, atk_cd: int, ammo: float,
@@ -42,6 +43,7 @@ class Weapon(GenericEntity):
         self.curr_atk_cd = 0
         self.ammo = ammo
         self.rot_off = pygame.math.Vector2(rot_off)
+        self.barrel_len = self.sprite.rect.h
 
     def update_sprite(self) -> None:
         """
@@ -88,7 +90,11 @@ class MachineGun(Weapon):
             bullet_image = pygame.surface.Surface((2, 80))
             bullet_image.fill(RED)
 
-            return Bullet(self.damage, self.pos, 2500, self.a_pos, bullet_image)
+            return Bullet(self.damage,
+                          self.pos + pymunk.Vec2d(0, self.barrel_len).rotated(-self.a_pos),
+                          2500,
+                          self.a_pos,
+                          bullet_image)
 
 
 class RocketLauncher(Weapon):
@@ -119,5 +125,10 @@ class RocketLauncher(Weapon):
             rocket_image = pygame.image.load("assets/rocket1.png")
             rocket_image = pygame.transform.scale(rocket_image, [65, 65])
 
-            if self.current_target is not None:
-                return Rocket(self.damage, self.pos, 750, self.a_pos, rocket_image, self.current_target, 0.05)
+            return Rocket(self.damage,
+                          self.pos + pymunk.Vec2d(0, self.barrel_len).rotated(-self.a_pos),
+                          750,
+                          self.a_pos,
+                          rocket_image,
+                          self.current_target,
+                          0.05)

@@ -131,7 +131,7 @@ class Rocket(Projectile):
 
     def track(self) -> None:
         """
-        adjust the trajectory of the rocket based on the target's current position
+        Adjust the trajectory of the rocket based on the target's current position
 
         :return: None
         """
