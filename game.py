@@ -287,9 +287,9 @@ class Game:
 
         th = 0
         if keys[pygame.K_d]:
-            th += math.pi / 4
+            th += self.car.max_steering
         if keys[pygame.K_a]:
-            th -= math.pi / 4
+            th -= self.car.max_steering
 
         self.car.steer(th)
 

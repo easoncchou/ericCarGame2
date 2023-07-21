@@ -1,6 +1,7 @@
 import pymunk
 import pygame
 import math
+from typing import Union
 
 from weapon import Weapon
 from entities import HealthEntity
@@ -21,7 +22,7 @@ class Car2(HealthEntity):
     back_wheel_groove: pymunk.GrooveJoint
     pos: pymunk.Vec2d
     sprite: Sprite
-    wep: Weapon
+    wep: Union[Weapon, None]
 
     def __init__(self, space: pymunk.Space, mass: int, pos: pymunk.Vec2d, max_hp: int, image: pygame.image, poly=None) -> None:
         """
@@ -35,6 +36,9 @@ class Car2(HealthEntity):
         """
 
         HealthEntity.__init__(self, Sprite(pos, image), max_hp, pos)
+
+        self.wep = None
+        self.max_steering = math.pi / 4
 
         self.space = space
 
@@ -122,6 +126,11 @@ class Car2(HealthEntity):
         :param th: how much to turn the front wheel in rads
         :return: None
         """
+
+        if self.front_wheel.angle > self.car_body.angle + self.max_steering:
+            self.front_wheel.angle = self.car_body.angle + self.max_steering
+        elif self.front_wheel.angle < self.car_body.angle - self.max_steering:
+            self.front_wheel.angle = self.car_body.angle - self.max_steering
 
         # move the front wheel angle to the correct position gradually
         if self.front_wheel.angle < self.car_body.angle + th:
