@@ -142,11 +142,19 @@ class Reticle(GenericEntity):
     """
     A reticle spawned when a rocket launcher selects a target. The Reticle will follow the targeted Enemy.
     """
-    def __init__(self, game: 'Game', pos: [int, int], sprite: Sprite, current_target: HealthEntity):
-        super().__init__(game, pos, sprite, (0, 0))
-        self.game.ents.append(self)
-        self.game.all_sprites_group.add(self.sprite)
+
+    def __init__(self, pos: pymunk.Vec2d, sprite: Sprite, current_target: HealthEntity):
+        GenericEntity.__init__(self, sprite, pos)
         self.current_target = current_target
+
+    def update_sprite(self) -> None:
+        """
+        Update the sprite
+
+        :return:
+        """
+
+        self.sprite.rect = self.sprite.image.get_rect(center=self.pos)
 
     def update(self) -> None:
         """
@@ -155,11 +163,8 @@ class Reticle(GenericEntity):
         :return: None
         """
 
-        self.pos = [self.current_target.pos[0], self.current_target.pos[1]]
+        self.pos = self.current_target.pos
         self.update_sprite()
-
-        if self.current_target.hp <= 0:
-            self.delete()
 
 
 

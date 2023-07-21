@@ -2,7 +2,7 @@ import pymunk
 import pygame
 
 from constants import *
-from entities import GenericEntity
+from entities import GenericEntity, HealthEntity
 from sprite import Sprite
 
 
@@ -107,14 +107,27 @@ class Rocket(Projectile):
     """
 
     target: HealthEntity
-    accuracy: int       # how well a rocket can adjust its trajectory in order to hit the target
+    tracking: float       # how well a rocket can adjust its trajectory in order to hit the target
 
-    def __int__(self, game: 'Game', damage: float, mass: int, pos: list[int], speed: int, a_pos: float,
-                image: pygame.image, target: HealthEntity, accuracy: int, poly=None):
-        super().__init__(game, damage, mass, pos, speed, a_pos, image)
+    def __init__(self, damage: float, pos: pymunk.Vec2d, speed: int, a_pos: float,
+                image: pygame.image, target: HealthEntity, tracking: float, poly=None):
+        """
+        Initializer
+
+        :param damage:
+        :param mass:
+        :param pos:
+        :param speed:
+        :param a_pos:
+        :param image:
+        :param target:
+        :param tracking:
+        :param poly:
+        """
+        Projectile.__init__(self, damage, pos, speed, a_pos, image, poly)
 
         self.target = target
-        self.accuracy = accuracy
+        self.tracking = tracking
 
     def track(self) -> None:
         """

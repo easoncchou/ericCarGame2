@@ -35,7 +35,7 @@ if __name__ == '__main__':
     wep2 = RocketLauncher(init_pos, 100, 60, 500, (0, 18), launcher_image)
 
     # add wep to car and car to game
-    car.set_weapon(wep1)
+    car.set_weapon(wep2)
     game.set_car(car)
 
     # add target
