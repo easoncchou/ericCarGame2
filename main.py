@@ -4,7 +4,7 @@ import pymunk
 from constants import *
 from game import Game
 from car_2 import Car2
-from enemy import Target
+from enemy import Target, MovingTarget
 from weapon import MachineGun, RocketLauncher
 
 
@@ -41,7 +41,7 @@ if __name__ == '__main__':
     # add target
     target_image = pygame.surface.Surface((50, 50))
     target_image.fill(RED)
-    target = Target(pymunk.Vec2d(400, 400), 500, target_image)
+    target = MovingTarget(pymunk.Vec2d(200, 200), pymunk.Vec2d(500, 500), 500, target_image)
 
     game.add_target(target)
 
