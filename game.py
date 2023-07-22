@@ -95,7 +95,6 @@ class Game:
             proj = arbiter.shapes[0].ent
             self.delete_proj(proj)
 
-
         bullet_wall_handler = self.space.add_collision_handler(COLLTYPE_BULLETPROJ, COLLTYPE_WALL)
         bullet_wall_handler.begin = bullet_wall_coll
 

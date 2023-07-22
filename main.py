@@ -6,7 +6,6 @@ from game import Game
 from car_2 import Car2
 from enemy import Target, MovingTarget
 from weapon import MachineGun, RocketLauncher
-from projectiles import Bullet
 
 
 if __name__ == '__main__':
@@ -48,7 +47,6 @@ if __name__ == '__main__':
 
     game.add_target(target1)
     game.add_target(target2)
-
 
     # run game
     game.run_game_loop()
