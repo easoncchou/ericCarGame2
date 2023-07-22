@@ -42,10 +42,13 @@ if __name__ == '__main__':
     # add target
     target_image = pygame.surface.Surface((50, 50))
     target_image.fill(RED)
-    target = Target(pymunk.Vec2d(200, 200), 1500, target_image)
+    target1 = Target(pymunk.Vec2d(200, 200), 1500, target_image)
+    target2 = Target(pymunk.Vec2d(300, 200), 1500, target_image)
     m_target = MovingTarget(pymunk.Vec2d(200, 200), pymunk.Vec2d(500, 500), 1500, target_image)
 
-    game.add_target(m_target)
+    game.add_target(target1)
+    game.add_target(target2)
+
 
     # run game
     game.run_game_loop()

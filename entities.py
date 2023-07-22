@@ -167,6 +167,22 @@ class Reticle(GenericEntity):
         self.update_sprite()
 
 
+class Explosion(GenericEntity):
+    def __init__(self, radius: float, pos: pymunk.Vec2d):
+        image = pygame.Surface([2 * radius, 2 * radius], pygame.SRCALPHA)
+        pygame.draw.circle(image, RED, (radius, radius), radius)
+
+        GenericEntity.__init__(self, Sprite(pos, image), pos)
+
+        self.lifespan = TICKRATE / 5    # 0.2 second
+
+    def update_sprite(self) -> None:
+        pass
+
+    def update(self) -> None:
+        self.lifespan -= 1
+
+
 
 
 

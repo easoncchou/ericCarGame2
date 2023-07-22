@@ -41,7 +41,7 @@ class Target(HealthEntity):
         self.body.position = pos
 
         self.shape = pymunk.Poly(self.body, vertices)
-        self.shape.collision_type = COLL_ENEM
+        self.shape.collision_type = COLLTYPE_ENEM
 
         self.shape.ent = self
 

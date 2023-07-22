@@ -3,7 +3,7 @@ import pygame
 import math
 
 from constants import *
-from entities import GenericEntity, HealthEntity
+from entities import GenericEntity, HealthEntity, Explosion
 from sprite import Sprite
 
 
@@ -50,7 +50,6 @@ class Projectile(GenericEntity):
         self.body.angle = -a_pos
 
         self.shape = pymunk.Poly(self.body, vertices)
-        self.shape.collision_type = COLL_PROJ
 
         self.shape.ent = self
 
@@ -64,19 +63,6 @@ class Projectile(GenericEntity):
         self.sprite.image = pygame.transform.rotate(self.sprite.original_image,
                                                     -self.body.rotation_vector.angle_degrees)
         self.sprite.rect = self.sprite.image.get_rect(center=self.body.position)
-
-    def collide_bounds(self) -> None:
-        """
-        Checks if the projectile is out of bounds
-
-        :return: None
-        """
-        outer_bound = 100
-
-        return self.body.position.x <= -outer_bound or \
-            self.body.position.x > MAP_WIDTH + outer_bound or \
-            self.body.position.y <= -outer_bound or \
-            self.body.position.y > MAP_HEIGHT + outer_bound
 
     def update(self) -> None:
         """
@@ -92,6 +78,24 @@ class Bullet(Projectile):
     Projectile fired by a machine gun
     """
 
+    def __init__(self, damage: float, pos: pymunk.Vec2d, speed: int,
+                 a_pos: float, image: pygame.image, poly=None) -> None:
+        """
+        Initializer
+
+        :param mass: mass of projectile
+        :param damage: damage done by the projectile when it collides with a target
+        :param mass: mass of the projectile
+        :param pos: a list of two integers representing the x and y coordinates of the projectile
+        :param speed: the speed at which the projectile will travel at
+        :param a_pos: the angular position of the projectile, in radians
+        :param image: a pygame image of the projectile's sprite currently loaded in main
+        :param poly: polygon representing the shape of the projectile, rectangle by default
+        """
+
+        Projectile.__init__(self, damage, pos, speed, a_pos, image, poly)
+        self.shape.collision_type = COLLTYPE_BULLETPROJ
+
 
 class Laser(Projectile):
     """
@@ -104,10 +108,16 @@ class Rocket(Projectile):
     Projectile fired by a rocket launcher
     """
 
+    body: pymunk.Body
+    shape: pymunk.Shape
+    damage: float
+    pos: pymunk.Vec2d
     target: HealthEntity
     tracking: float       # how well a rocket can adjust its trajectory in order to hit the target
+    explosion_radius: float
+    explosion_force: float
 
-    def __init__(self, damage: float, pos: pymunk.Vec2d, speed: int, a_pos: float,
+    def __init__(self, damage: float, explosion_radius: float, explosion_force: float, pos: pymunk.Vec2d, speed: int, a_pos: float,
                  image: pygame.image, target: HealthEntity, tracking: float, poly=None):
         """
         Initializer
@@ -122,10 +132,14 @@ class Rocket(Projectile):
         :param tracking:
         :param poly:
         """
+
         Projectile.__init__(self, damage, pos, speed, a_pos, image, poly)
 
+        self.shape.collision_type = COLLTYPE_ROCKETPROJ
         self.target = target
         self.tracking = tracking
+        self.explosion_radius = explosion_radius
+        self.explosion_force = explosion_force
 
     def track(self) -> None:
         """
@@ -148,6 +162,14 @@ class Rocket(Projectile):
             self.body.angle += self.tracking / 2
             self.body.velocity = self.body.velocity.rotated(self.tracking / 2)
 
+    def explode(self) -> Explosion:
+        """
+        Explode the rocket
+
+        :return:
+        """
+        return Explosion(self.explosion_radius, self.pos)
+
     def update(self) -> None:
         """
         Updates the rocket every tick and adjusts its body angle based on the track function
@@ -158,7 +180,3 @@ class Rocket(Projectile):
         Projectile.update(self)
         if self.target is not None:
             self.track()
-
-
-
-

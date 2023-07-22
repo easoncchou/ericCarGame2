@@ -6,7 +6,7 @@ from typing import Union
 
 from constants import *
 from projectiles import Projectile, Bullet, Rocket
-from entities import GenericEntity, HealthEntity, Reticle
+from entities import GenericEntity, HealthEntity
 from sprite import Sprite
 
 
@@ -126,6 +126,8 @@ class RocketLauncher(Weapon):
             rocket_image = pygame.transform.scale(rocket_image, [65, 65])
 
             return Rocket(self.damage,
+                          100,
+                          25000,
                           self.pos + pymunk.Vec2d(0, self.barrel_len).rotated(-self.a_pos),
                           750,
                           self.a_pos,

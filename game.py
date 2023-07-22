@@ -6,7 +6,7 @@ from typing import Union
 
 from constants import *
 from sprite import Sprite
-from entities import GenericEntity, HealthEntity, Reticle
+from entities import GenericEntity, HealthEntity, Reticle, Explosion
 from car_2 import Car2
 from weapon import RocketLauncher
 from projectiles import Projectile
@@ -36,10 +36,32 @@ class Game:
 
         pygame.init()
         self.space = pymunk.Space()
-        self.space.damping = 0.9
+        self.space.damping = 0.7
 
-        # collision handler
-        def hit(arbiter, space, data):
+        # add walls
+        # Create a ground shape (a segment in this case)
+        bottom_wall_shape = pymunk.Segment(self.space.static_body, (0, 0), (0, height), 1)
+        bottom_wall_shape.collision_type = COLLTYPE_WALL
+        self.space.add(bottom_wall_shape)
+
+        # Create other walls or boundaries as needed
+        # Example: A left wall
+        left_wall_shape = pymunk.Segment(self.space.static_body, (0, height), (width, height), 1)
+        left_wall_shape.collision_type = COLLTYPE_WALL
+        self.space.add(left_wall_shape)
+
+        # Example: A right wall
+        right_wall_shape = pymunk.Segment(self.space.static_body, (width, height), (width, 0), 1)
+        right_wall_shape.collision_type = COLLTYPE_WALL
+        self.space.add(right_wall_shape)
+
+        # Example: A ceiling
+        top_wall_shape = pymunk.Segment(self.space.static_body, (width, 0), (0, 0), 1)
+        top_wall_shape.collision_type = COLLTYPE_WALL
+        self.space.add(top_wall_shape)
+
+        # collision handlers
+        def bullet_coll(arbiter, space, data):
             # neat trick, if we add an attribute to the pymunk.Shape attribute in the enemy and proj initializer, we can get the entities associated easily
             proj = arbiter.shapes[0].ent
             enemy = arbiter.shapes[1].ent
@@ -49,8 +71,36 @@ class Game:
 
             return True
 
-        h = self.space.add_collision_handler(COLL_PROJ, COLL_ENEM)
-        h.begin = hit
+        bullet_handler = self.space.add_collision_handler(COLLTYPE_BULLETPROJ, COLLTYPE_ENEM)
+        bullet_handler.begin = bullet_coll
+
+        def rocket_coll(arbiter, space, data):
+            proj = arbiter.shapes[0].ent
+
+            for enemy in self.enemies:
+                if abs(enemy.pos - proj.pos) <= proj.explosion_radius:
+                    enemy.hp -= proj.damage
+                    # assume that the enemy has a body
+                    enemy.body.apply_impulse_at_local_point((enemy.pos - proj.pos).normalized() * proj.explosion_force)
+
+            self.add_entity(proj.explode())
+            self.delete_proj(proj)
+
+            return True
+
+        rocket_handler = self.space.add_collision_handler(COLLTYPE_ROCKETPROJ, COLLTYPE_ENEM)
+        rocket_handler.begin = rocket_coll
+
+        def bullet_wall_coll(arbiter, space, data):
+            proj = arbiter.shapes[0].ent
+            self.delete_proj(proj)
+
+
+        bullet_wall_handler = self.space.add_collision_handler(COLLTYPE_BULLETPROJ, COLLTYPE_WALL)
+        bullet_wall_handler.begin = bullet_wall_coll
+
+        rocket_wall_handler = self.space.add_collision_handler(COLLTYPE_ROCKETPROJ, COLLTYPE_WALL)
+        rocket_wall_handler.begin = rocket_coll
 
         self.done = False
         self.size = (width, height)
@@ -238,21 +288,23 @@ class Game:
         :return:
         """
 
+        phys_tick = 8
+
         # tick physics
-        for i in range(16):
-            self.space.step(1 / TICKRATE / 16)
+        for i in range(phys_tick):
+            self.space.step(1 / TICKRATE / phys_tick)
 
         # update all entities
         for ent in self.ents:
             ent.update()
 
-            if isinstance(ent, Projectile):
-                if ent.collide_bounds():
-                    self.delete_proj(ent)
-            elif isinstance(ent, Target):
+            if isinstance(ent, Target):
                 if ent.hp <= 0:
                     self.delete_target(ent)
                     self.delete_entity(ent.hp_bar)
+            elif isinstance(ent, Explosion):
+                if ent.lifespan <= 0:
+                    self.delete_entity(ent)
 
         if self.reticle is not None and self.reticle.current_target.hp <= 0:
             if self.reticle in self.ents:
