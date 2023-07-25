@@ -5,7 +5,7 @@ import pymunk
 from typing import Union
 
 from constants import *
-from projectiles import Projectile, Bullet, Rocket
+from projectiles import Projectile, Bullet, Rocket, Laser
 from entities import GenericEntity, HealthEntity
 from sprite import Sprite
 
@@ -117,7 +117,8 @@ class RocketLauncher(Weapon):
     def shoot(self) -> Projectile:
         """
         Shoots a bullet in the guns current direction
-        :return:
+
+        :return: Projectile
         """
         if self.curr_atk_cd <= 0:
             self.curr_atk_cd = self.atk_cd
@@ -134,4 +135,59 @@ class RocketLauncher(Weapon):
                           rocket_image,
                           None if self.targeting_status != OFF else self.current_target,
                           0.05)
+
+
+class LaserCannon(Weapon):
+    """
+    Laser cannon that fires a laser at the mouse direction
+    """
+
+    proj: Union[Laser, None]
+
+    def __init__(self, pos: pymunk.Vec2d, damage: float, atk_cd: int, laser: Laser, ammo: float,
+                 rot_off: tuple[int, int], image: pygame.image):
+        """
+        Initializer
+
+        :param pos: a list of two integers representing the x y position of the gun's center
+        :param damage: an integer representing the damage value of each projectile fired by the weapon
+        :param atk_cd: unused for the laser subclass
+        :param ammo: the number of projectiles a weapon can fire before running out
+        :param image: the image for the sprite of the weapon
+        """
+
+        GenericEntity.__init__(self, Sprite(pos, image), pos, math.pi)
+
+        self.damage = damage
+        self.ammo = ammo
+        self.laser = laser
+        self.rot_off = pygame.math.Vector2(rot_off)
+        self.barrel_len = self.sprite.rect.h - 10
+
+    def update(self) -> None:
+        """
+        Updates the entity every tick
+        :return: None
+        """
+
+        self.update_sprite()
+
+    def shoot(self) -> Projectile:
+        """
+        Creates a Laser pointed at the mouse's direction
+
+        :return: Projectile
+        """
+
+        temp_image = pygame.surface.Surface([20, 1000])
+        temp_image.fill(RED)
+
+        if self.laser is None:
+            self.laser = Laser(100, self.pos + pymunk.Vec2d(0, self.barrel_len).rotated(-self.a_pos),
+                               self.a_pos, 1000, self.barrel_len, temp_image)
+            return self.laser
+        else:
+            self.laser.pos = self.pos
+            self.laser.a_pos = self.a_pos
+
 

@@ -4,11 +4,13 @@ import pygame
 import math
 from typing import Union
 
+import shapely
+
 from constants import *
 from sprite import Sprite
 from entities import GenericEntity, HealthEntity, Reticle, Explosion
 from car_2 import Car2
-from weapon import RocketLauncher
+from weapon import MachineGun, RocketLauncher, LaserCannon
 from projectiles import Projectile
 from enemy import Target
 
@@ -94,6 +96,8 @@ class Game:
         def bullet_wall_coll(arbiter, space, data):
             proj = arbiter.shapes[0].ent
             self.delete_proj(proj)
+
+            return True
 
         bullet_wall_handler = self.space.add_collision_handler(COLLTYPE_BULLETPROJ, COLLTYPE_WALL)
         bullet_wall_handler.begin = bullet_wall_coll
@@ -281,6 +285,50 @@ class Game:
                 self.car.wep.targeting_status = 0
                 self.car.wep.current_target = None
 
+    def laser_length(self) -> float:
+        """
+
+        :return:
+        """
+
+        self.car.wep: LaserCannon
+
+        to_endpoint = pymunk.Vec2d(0, self.car.wep.laser.length)
+        to_endpoint = to_endpoint.rotated(-self.car.wep.laser.a_pos)
+        line = shapely.LineString([self.car.wep.laser.pos, self.car.wep.pos + to_endpoint])
+
+        closest = None
+        closest_distance = 100000000
+
+        for enemy in self.enemies:
+            # print([point + enemy.pos for point in enemy.shape.get_vertices()])
+            poly = shapely.Polygon([point + enemy.pos for point in enemy.shape.get_vertices()])
+
+            if line.intersects(poly):
+                # collides
+                if closest is None:
+                    closest = enemy
+                    intersections = shapely.intersection(line, poly).coords
+                    # get closest intersection
+                    for point in intersections:
+                        dist = abs(self.car.wep.laser.pos + pymunk.Vec2d(0, self.car.wep.barrel_len).rotated(-self.car.wep.a_pos) - point)
+                        if dist < closest_distance:
+                            closest_distance = dist
+                else:
+                    closest_dist = abs(self.car.wep.pos - closest.pos)
+                    current_dist = abs(self.car.wep.pos - enemy.pos)
+                    if current_dist < closest_dist:
+                        closest = enemy
+                        intersections = shapely.intersection(line, poly).coords
+                        # get closest intersection
+                        for point in intersections:
+                            dist = abs(self.car.wep.laser.pos + pymunk.Vec2d(0, self.car.wep.barrel_len).rotated(-self.car.wep.a_pos) - point)
+                            if dist < closest_distance:
+                                closest_distance = dist
+
+        if closest is not None:
+            self.car.wep.laser.length = closest_distance
+
     def update(self) -> None:
         """
         Update the game every tick
@@ -351,8 +399,22 @@ class Game:
         m_buttons = pygame.mouse.get_pressed()
         if m_buttons[0]:
             new_proj = self.car.wep.shoot()
-            if new_proj is not None:
-                self.add_proj(new_proj)
+            if isinstance(self.car.wep, LaserCannon):
+
+                self.car.wep.laser.length = 1000
+                # calculate the length of the laser beam sprite based on collision
+                self.laser_length()
+
+                if new_proj is not None:
+                    self.add_entity(new_proj)
+
+            else:
+                if new_proj is not None:
+                    self.add_proj(new_proj)
+        else:
+            if isinstance(self.car.wep, LaserCannon) and self.car.wep.laser is not None:
+                self.delete_entity(self.car.wep.laser)
+                self.car.wep.laser = None
 
     def run_game_loop(self) -> None:
         """

@@ -97,12 +97,6 @@ class Bullet(Projectile):
         self.shape.collision_type = COLLTYPE_BULLETPROJ
 
 
-class Laser(Projectile):
-    """
-    Projectile fired by a laser cannon
-    """
-
-
 class Rocket(Projectile):
     """
     Projectile fired by a rocket launcher
@@ -180,3 +174,55 @@ class Rocket(Projectile):
         Projectile.update(self)
         if self.target is not None:
             self.track()
+
+
+class Laser(Projectile):
+    """
+    Projectile shot out by a LaserCannon; a beam that stops on contact
+    """
+
+    colour: [int, int, int]  # as of now the colour will be hardcoded
+
+    def __init__(self, damage: float, pos: pymunk.Vec2d, a_pos: float, length: float,
+                 barrel_len: float, image: pygame.image, poly=None):
+        """
+        Initializer
+
+        :param damage: damage done by the laser per tick
+        :param pos: origin of the laser upon which rotation will be done
+        :param a_pos: angular position of the laser
+        :param image: image of single laser block that makes up the laser (not yet implemented this way; just a rect rn)
+        :param poly: polygon of the laser used for collision/hit detection
+        """
+        GenericEntity.__init__(self, Sprite(pos, image), pos, a_pos)
+
+        self.damage = damage
+        self.pos = pos
+        self.a_pos = a_pos
+        self.length = length
+        self.barrel_len = barrel_len
+        self.image = image
+
+        if poly is None:
+            vertices = [self.sprite.rect.topleft - self.pos,
+                        self.sprite.rect.topright - self.pos,
+                        self.sprite.rect.bottomright - self.pos,
+                        self.sprite.rect.bottomleft - self.pos]
+        else:
+            vertices = poly.exterior.coords
+
+    def update_sprite(self) -> None:
+        """
+        Update the sprite
+
+        :return: None
+        """
+
+        image = pygame.surface.Surface([20, self.length])
+        image.fill(RED)
+        image = image.convert_alpha()
+        self.sprite.original_image = image
+        rot_off = pymunk.Vec2d(0, self.length / 2)
+        offset_rotated = rot_off.rotated(-self.a_pos)
+        self.sprite.image = pygame.transform.rotate(self.sprite.original_image, ((180 / math.pi) * self.a_pos))
+        self.sprite.rect = self.sprite.image.get_rect(center=self.pos + offset_rotated + pymunk.Vec2d(0, self.barrel_len).rotated(-self.a_pos))
