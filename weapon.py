@@ -6,7 +6,7 @@ from typing import Union
 
 from constants import *
 from projectiles import Projectile, Bullet, Rocket, Laser
-from entities import GenericEntity, HealthEntity
+from entities import GenericEntity, HealthEntity, LaserContact
 from sprite import Sprite
 
 
@@ -43,7 +43,7 @@ class Weapon(GenericEntity):
         self.curr_atk_cd = 0
         self.ammo = ammo
         self.rot_off = pygame.math.Vector2(rot_off)
-        self.barrel_len = self.sprite.rect.h
+        self.barrel_len = self.sprite.rect.h - 20
 
     def update_sprite(self) -> None:
         """
@@ -143,6 +143,7 @@ class LaserCannon(Weapon):
     """
 
     proj: Union[Laser, None]
+    laser_contact: LaserContact
 
     def __init__(self, pos: pymunk.Vec2d, damage: float, atk_cd: int, laser: Laser, ammo: float,
                  rot_off: tuple[int, int], image: pygame.image):
@@ -162,7 +163,8 @@ class LaserCannon(Weapon):
         self.ammo = ammo
         self.laser = laser
         self.rot_off = pygame.math.Vector2(rot_off)
-        self.barrel_len = self.sprite.rect.h - 10
+        self.barrel_len = self.sprite.rect.h - 27
+        self.laser_contact = None
 
     def update(self) -> None:
         """
@@ -180,11 +182,16 @@ class LaserCannon(Weapon):
         """
 
         temp_image = pygame.surface.Surface([20, 1000])
-        temp_image.fill(RED)
+        temp_image.fill(BLUE)
+        radius = 20
+
+        image = pygame.Surface([2 * radius, 2 * radius], pygame.SRCALPHA)
+        pygame.draw.circle(image, BLUE, (radius, radius), radius)
 
         if self.laser is None:
             self.laser = Laser(100, self.pos + pymunk.Vec2d(0, self.barrel_len).rotated(-self.a_pos),
-                               self.a_pos, 1000, self.barrel_len, temp_image)
+                               self.a_pos, 2000, self.barrel_len, temp_image)
+            self.laser_contact = LaserContact(Sprite(pymunk.Vec2d(0, 0), image), pymunk.Vec2d(0, 0))
             return self.laser
         else:
             self.laser.pos = self.pos

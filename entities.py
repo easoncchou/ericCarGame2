@@ -183,6 +183,28 @@ class Explosion(GenericEntity):
         self.lifespan -= 1
 
 
+class LaserContact(GenericEntity):
+    """
+    An entity that exists at the endpoint of a laser beam
+    """
+
+    def update(self) -> None:
+        """
+        Does nothing
+
+        :return:
+        """
+        self.update_sprite()
+
+    def update_sprite(self) -> None:
+        """
+        Update the sprite
+
+        :return:
+        """
+
+        self.sprite.rect = self.sprite.image.get_rect(center=self.pos)
+
 
 
 

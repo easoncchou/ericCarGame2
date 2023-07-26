@@ -17,7 +17,7 @@ if __name__ == '__main__':
     # Resize
     car_image = pygame.transform.scale(
         car_image,
-        (40, 75),
+        (45, 80),
     )
     init_pos = pymunk.Vec2d(100, 100)
 
@@ -30,13 +30,14 @@ if __name__ == '__main__':
     launcher_image = pygame.transform.scale(launcher_image, [70, 70])
 
     # define the pygame sprite for the laser cannon
-    cannon_image = pygame.surface.Surface([20, 80])
+    cannon_image = pygame.image.load("assets/laser_cannon1.png")
+    cannon_image = pygame.transform.scale(cannon_image, [85, 85])
 
     # create car and wep
     car = Car2(game.space, 1000, init_pos, 250, car_image)
-    wep1 = MachineGun(init_pos, 20, 10, 500, (10, 10), gun_image)
+    wep1 = MachineGun(init_pos, 20, 10, 500, (-4, 15), gun_image)
     wep2 = RocketLauncher(init_pos, 100, 60, 500, (0, 18), launcher_image)
-    wep3 = LaserCannon(init_pos, 30, 0, None, 500, (0, 30), cannon_image)
+    wep3 = LaserCannon(init_pos, 5, 0, None, 500, (-5, 25), cannon_image)
 
     # add wep to car and car to game
     car.set_weapon(wep3)

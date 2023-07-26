@@ -194,6 +194,8 @@ class Laser(Projectile):
         :param image: image of single laser block that makes up the laser (not yet implemented this way; just a rect rn)
         :param poly: polygon of the laser used for collision/hit detection
         """
+
+        #create the sprite for the laser beam
         GenericEntity.__init__(self, Sprite(pos, image), pos, a_pos)
 
         self.damage = damage
@@ -219,10 +221,11 @@ class Laser(Projectile):
         """
 
         image = pygame.surface.Surface([20, self.length])
-        image.fill(RED)
+        image.fill(BLUE)
         image = image.convert_alpha()
         self.sprite.original_image = image
         rot_off = pymunk.Vec2d(0, self.length / 2)
         offset_rotated = rot_off.rotated(-self.a_pos)
         self.sprite.image = pygame.transform.rotate(self.sprite.original_image, ((180 / math.pi) * self.a_pos))
         self.sprite.rect = self.sprite.image.get_rect(center=self.pos + offset_rotated + pymunk.Vec2d(0, self.barrel_len).rotated(-self.a_pos))
+

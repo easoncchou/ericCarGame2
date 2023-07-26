@@ -220,7 +220,7 @@ class Game:
 
         # debug pymunk
         options = pymunk.pygame_util.DrawOptions(self.screen)
-        self.space.debug_draw(options)
+        # self.space.debug_draw(options)
 
         # debug speedometer todo remove later
         font = pygame.font.SysFont(None, 48)
@@ -285,7 +285,7 @@ class Game:
                 self.car.wep.targeting_status = 0
                 self.car.wep.current_target = None
 
-    def laser_length(self) -> float:
+    def laser_collide(self) -> pymunk.Vec2d:
         """
 
         :return:
@@ -296,7 +296,16 @@ class Game:
         to_endpoint = pymunk.Vec2d(0, self.car.wep.laser.length)
         to_endpoint = to_endpoint.rotated(-self.car.wep.laser.a_pos)
         line = shapely.LineString([self.car.wep.laser.pos, self.car.wep.pos + to_endpoint])
+        wall_contact = None
+        enemy_contact = None
 
+        # determine the length of the laser if it were to hit a wall
+        barrier_definition = shapely.LineString([[0, 0], [MAP_WIDTH, 0], [MAP_WIDTH, MAP_HEIGHT], [0, MAP_HEIGHT], [0, 0]])
+        if line.intersects(barrier_definition):
+            wall_contact = shapely.intersection(line, barrier_definition).coords
+            self.car.wep.laser.length = abs(self.car.wep.laser.pos + pymunk.Vec2d(0, self.car.wep.barrel_len).rotated(-self.car.wep.a_pos) - wall_contact[0])
+
+        # determine the length of the laser if it were to hit an enemy
         closest = None
         closest_distance = 100000000
 
@@ -314,6 +323,7 @@ class Game:
                         dist = abs(self.car.wep.laser.pos + pymunk.Vec2d(0, self.car.wep.barrel_len).rotated(-self.car.wep.a_pos) - point)
                         if dist < closest_distance:
                             closest_distance = dist
+                            enemy_contact = point
                 else:
                     closest_dist = abs(self.car.wep.pos - closest.pos)
                     current_dist = abs(self.car.wep.pos - enemy.pos)
@@ -325,9 +335,15 @@ class Game:
                             dist = abs(self.car.wep.laser.pos + pymunk.Vec2d(0, self.car.wep.barrel_len).rotated(-self.car.wep.a_pos) - point)
                             if dist < closest_distance:
                                 closest_distance = dist
+                                enemy_contact = point
 
+        # calculate and perform the laser's damage if it hits an enemy
         if closest is not None:
             self.car.wep.laser.length = closest_distance
+            closest.hp -= self.car.wep.damage
+            return enemy_contact
+        else:
+            return wall_contact[0]
 
     def update(self) -> None:
         """
@@ -403,10 +419,12 @@ class Game:
 
                 self.car.wep.laser.length = 1000
                 # calculate the length of the laser beam sprite based on collision
-                self.laser_length()
+                laser_contact_pos = self.laser_collide()
+                self.car.wep.laser_contact.pos = laser_contact_pos
 
                 if new_proj is not None:
                     self.add_entity(new_proj)
+                    self.add_entity(self.car.wep.laser_contact)
 
             else:
                 if new_proj is not None:
@@ -414,6 +432,7 @@ class Game:
         else:
             if isinstance(self.car.wep, LaserCannon) and self.car.wep.laser is not None:
                 self.delete_entity(self.car.wep.laser)
+                self.delete_entity(self.car.wep.laser_contact)
                 self.car.wep.laser = None
 
     def run_game_loop(self) -> None:
