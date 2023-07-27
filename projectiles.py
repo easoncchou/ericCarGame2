@@ -195,15 +195,21 @@ class Laser(Projectile):
         :param poly: polygon of the laser used for collision/hit detection
         """
 
-        #create the sprite for the laser beam
-        GenericEntity.__init__(self, Sprite(pos, image), pos, a_pos)
+        f_image = pygame.surface.Surface([image.get_width(), length], pygame.SRCALPHA)
+
+        # need to tile the image length // image.get_height() + 1 times
+        for i in range(int(length // image.get_height()) + 1):
+            f_image.blit(image, (0, i * image.get_height()))
+
+        # create the sprite for the laser beam
+        GenericEntity.__init__(self, Sprite(pos, f_image), pos, a_pos)
 
         self.damage = damage
         self.pos = pos
         self.a_pos = a_pos
         self.length = length
         self.barrel_len = barrel_len
-        self.image = image
+        self.block_image = image
 
         if poly is None:
             vertices = [self.sprite.rect.topleft - self.pos,
@@ -220,12 +226,14 @@ class Laser(Projectile):
         :return: None
         """
 
-        image = pygame.surface.Surface([20, self.length])
-        image.fill(BLUE)
-        image = image.convert_alpha()
-        self.sprite.original_image = image
+        f_image = pygame.surface.Surface([self.block_image.get_width(), self.length], pygame.SRCALPHA)
+        for i in range(int(self.length // self.block_image.get_height()) + 1):
+            f_image.blit(self.block_image, (0, i * self.block_image.get_height()))
+
+        self.sprite.original_image = f_image
         rot_off = pymunk.Vec2d(0, self.length / 2)
         offset_rotated = rot_off.rotated(-self.a_pos)
+
         self.sprite.image = pygame.transform.rotate(self.sprite.original_image, ((180 / math.pi) * self.a_pos))
         self.sprite.rect = self.sprite.image.get_rect(center=self.pos + offset_rotated + pymunk.Vec2d(0, self.barrel_len).rotated(-self.a_pos))
 

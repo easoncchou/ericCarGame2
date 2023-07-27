@@ -441,11 +441,9 @@ class Game:
 
         :return: None
         """
+
         while not self.done:
             self.handle_input()
-
             self.update()
-
             self.render()
-
             self.clock.tick(60)

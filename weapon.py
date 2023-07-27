@@ -181,17 +181,16 @@ class LaserCannon(Weapon):
         :return: Projectile
         """
 
-        temp_image = pygame.surface.Surface([20, 1000])
-        temp_image.fill(BLUE)
-        radius = 20
+        block_image = pygame.image.load("assets/laser_beam_block.png")
+        block_image = pygame.transform.scale(block_image, [20, 20])
 
-        image = pygame.Surface([2 * radius, 2 * radius], pygame.SRCALPHA)
-        pygame.draw.circle(image, BLUE, (radius, radius), radius)
+        contact_image = pygame.image.load('assets/laser_contact1.png')
+        contact_image = pygame.transform.scale(contact_image, [50, 50])
 
         if self.laser is None:
             self.laser = Laser(100, self.pos + pymunk.Vec2d(0, self.barrel_len).rotated(-self.a_pos),
-                               self.a_pos, 2000, self.barrel_len, temp_image)
-            self.laser_contact = LaserContact(Sprite(pymunk.Vec2d(0, 0), image), pymunk.Vec2d(0, 0))
+                               self.a_pos, 2000, self.barrel_len, block_image)
+            self.laser_contact = LaserContact(Sprite(pymunk.Vec2d(0, 0), contact_image), pymunk.Vec2d(0, 0))
             return self.laser
         else:
             self.laser.pos = self.pos
