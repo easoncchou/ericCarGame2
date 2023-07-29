@@ -393,8 +393,11 @@ class Game:
             self.rl_track(x, y)
 
         m_buttons = pygame.mouse.get_pressed()
-        if m_buttons[0]:
+        if m_buttons[0]: # pressed down left mouse button
+            # attempt to shoot
             new_proj = self.car.wep.shoot()
+
+            # if weapon is a laser cannon
             if isinstance(self.car.wep, LaserCannon):
                 # calculate the length of the laser beam sprite based on collision
                 laser_contact_pos, closest_enemy = self.laser_collide()
@@ -410,10 +413,11 @@ class Game:
                     self.add_entity(new_proj)
                     self.add_entity(self.car.wep.laser_contact)
 
+            # if the weapon isn't a laser cannon
             else:
                 if new_proj is not None:
                     self.add_proj(new_proj)
-        else:
+        else: # let go of left mouse button
             if isinstance(self.car.wep, LaserCannon) and self.car.wep.laser is not None:
                 self.delete_entity(self.car.wep.laser)
                 self.delete_entity(self.car.wep.laser_contact)
