@@ -183,8 +183,7 @@ class Laser(Projectile):
 
     colour: [int, int, int]  # as of now the colour will be hardcoded
 
-    def __init__(self, damage: float, pos: pymunk.Vec2d, a_pos: float, length: float,
-                 barrel_len: float, image: pygame.image, poly=None):
+    def __init__(self, damage: float, pos: pymunk.Vec2d, a_pos: float, length: float, image: pygame.image, poly=None):
         """
         Initializer
 
@@ -207,7 +206,8 @@ class Laser(Projectile):
         self.damage = damage
         self.pos = pos
         self.a_pos = a_pos
-        self.length = length
+        self.length = 0
+        self.max_length = length
         self.block_image = image
 
         if poly is None:

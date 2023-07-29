@@ -157,22 +157,10 @@ class LaserCannon(Weapon):
         :param image: the image for the sprite of the weapon
         """
 
-        GenericEntity.__init__(self, Sprite(pos, image), pos, math.pi)
+        Weapon.__init__(self, pos, damage, atk_cd, ammo, rot_off, image)
 
-        self.damage = damage
-        self.ammo = ammo
         self.laser = laser
-        self.rot_off = rot_off
-        self.barrel_len = self.sprite.rect.h
         self.laser_contact = None
-
-    def update(self) -> None:
-        """
-        Updates the entity every tick
-        :return: None
-        """
-
-        self.update_sprite()
 
     def shoot(self) -> Projectile:
         """
@@ -188,8 +176,8 @@ class LaserCannon(Weapon):
         contact_image = pygame.transform.scale(contact_image, [50, 50])
 
         if self.laser is None:
-            self.laser = Laser(100, self.pos + (pymunk.Vec2d(0, self.barrel_len / 2 + self.rot_off.y)).rotated(-self.a_pos),
-                               self.a_pos, 2000, self.barrel_len, block_image)
+            self.laser = Laser(self.damage, self.pos + (pymunk.Vec2d(0, self.barrel_len / 2 + self.rot_off.y)).rotated(-self.a_pos),
+                               self.a_pos, 200, block_image)
             self.laser_contact = LaserContact(Sprite(pymunk.Vec2d(0, 0), contact_image), pymunk.Vec2d(0, 0))
             return self.laser
         else:

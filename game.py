@@ -285,7 +285,7 @@ class Game:
                 self.car.wep.targeting_status = 0
                 self.car.wep.current_target = None
 
-    def laser_collide(self) -> pymunk.Vec2d:
+    def laser_collide(self) -> tuple[pymunk.Vec2d, Union[HealthEntity, None]]:
         """
 
         :return:
@@ -293,22 +293,19 @@ class Game:
 
         self.car.wep: LaserCannon
 
-        to_endpoint = pymunk.Vec2d(0, self.car.wep.laser.length)
-        to_endpoint = to_endpoint.rotated(-self.car.wep.laser.a_pos)
-        line = shapely.LineString([self.car.wep.laser.pos, self.car.wep.pos + to_endpoint])
-
-        wall_contact = None
-        enemy_contact = None
+        contact = self.car.wep.laser.pos + pymunk.Vec2d(0, self.car.wep.laser.max_length).rotated(-self.car.wep.laser.a_pos)
+        line = shapely.LineString([self.car.wep.laser.pos, contact])
 
         # determine the length of the laser if it were to hit a wall
         barrier_definition = shapely.LineString([[0, 0], [MAP_WIDTH, 0], [MAP_WIDTH, MAP_HEIGHT], [0, MAP_HEIGHT], [0, 0]])
-        if line.intersects(barrier_definition):
-            wall_contact = shapely.intersection(line, barrier_definition).coords
-            self.car.wep.laser.length = abs(self.car.wep.laser.pos - wall_contact[0])
+        wall_contact = shapely.intersection(line, barrier_definition).coords
+
+        if len(wall_contact) == 1:
+            contact = wall_contact[0]
 
         # determine the length of the laser if it were to hit an enemy
-        closest = None
-        closest_distance = 100000000
+        closest_distance = abs(self.car.wep.laser.pos - contact)
+        closest_enemy = None
 
         for enemy in self.enemies:
             # print([point + enemy.pos for point in enemy.shape.get_vertices()])
@@ -316,35 +313,20 @@ class Game:
 
             if line.intersects(poly):
                 # collides
-                if closest is None:
-                    closest = enemy
+                closest_dist = abs(self.car.wep.laser.pos - contact)
+                current_dist = abs(self.car.wep.laser.pos - enemy.pos)
+                if current_dist < closest_dist:
+                    closest_enemy = enemy
                     intersections = shapely.intersection(line, poly).coords
                     # get closest intersection
                     for point in intersections:
                         dist = abs(self.car.wep.laser.pos - point)
                         if dist < closest_distance:
                             closest_distance = dist
-                            enemy_contact = point
-                else:
-                    closest_dist = abs(self.car.wep.pos - closest.pos)
-                    current_dist = abs(self.car.wep.pos - enemy.pos)
-                    if current_dist < closest_dist:
-                        closest = enemy
-                        intersections = shapely.intersection(line, poly).coords
-                        # get closest intersection
-                        for point in intersections:
-                            dist = abs(self.car.wep.laser.pos - point)
-                            if dist < closest_distance:
-                                closest_distance = dist
-                                enemy_contact = point
+                            contact = point
 
         # calculate and perform the laser's damage if it hits an enemy
-        if closest is not None:
-            self.car.wep.laser.length = closest_distance
-            closest.hp -= self.car.wep.damage
-            return enemy_contact
-        else:
-            return wall_contact[0]
+        return contact, closest_enemy
 
     def update(self) -> None:
         """
@@ -417,11 +399,15 @@ class Game:
         if m_buttons[0]:
             new_proj = self.car.wep.shoot()
             if isinstance(self.car.wep, LaserCannon):
-
-                self.car.wep.laser.length = 1000
                 # calculate the length of the laser beam sprite based on collision
-                laser_contact_pos = self.laser_collide()
+                laser_contact_pos, closest_enemy = self.laser_collide()
                 self.car.wep.laser_contact.pos = laser_contact_pos
+                self.car.wep.laser.length = abs(self.car.wep.laser.pos - laser_contact_pos)
+
+                if closest_enemy is not None:
+                    if self.car.wep.curr_atk_cd <= 0:
+                        self.car.wep.curr_atk_cd = self.car.wep.atk_cd
+                        closest_enemy.hp -= self.car.wep.laser.damage
 
                 if new_proj is not None:
                     self.add_entity(new_proj)
