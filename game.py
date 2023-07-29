@@ -296,6 +296,7 @@ class Game:
         to_endpoint = pymunk.Vec2d(0, self.car.wep.laser.length)
         to_endpoint = to_endpoint.rotated(-self.car.wep.laser.a_pos)
         line = shapely.LineString([self.car.wep.laser.pos, self.car.wep.pos + to_endpoint])
+
         wall_contact = None
         enemy_contact = None
 
@@ -446,4 +447,4 @@ class Game:
             self.handle_input()
             self.update()
             self.render()
-            self.clock.tick(60)
+            self.clock.tick(TICKRATE)

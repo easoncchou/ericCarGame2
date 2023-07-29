@@ -22,10 +22,10 @@ class Weapon(GenericEntity):
     sprite: Sprite          # sprite for the weapon
     a_pos: float            # direction the weapon is facing
     barrel_len: int         # barrel length
-    rot_off: pygame.math.Vector2     # offset for the pivot of rotation for the sprite
+    rot_off: pymunk.Vec2d   # offset for the pivot of rotation for the sprite
 
     def __init__(self, pos: pymunk.Vec2d, damage: float, atk_cd: int, ammo: float,
-                 rot_off: tuple[int, int], image: pygame.image):
+                 rot_off: pymunk.Vec2d, image: pygame.image):
         """
         Initializer
 
@@ -42,8 +42,8 @@ class Weapon(GenericEntity):
         self.atk_cd = atk_cd
         self.curr_atk_cd = 0
         self.ammo = ammo
-        self.rot_off = pygame.math.Vector2(rot_off)
-        self.barrel_len = self.sprite.rect.h - 20
+        self.rot_off = rot_off
+        self.barrel_len = self.sprite.rect.h
 
     def update_sprite(self) -> None:
         """
@@ -53,7 +53,7 @@ class Weapon(GenericEntity):
         """
 
         self.sprite.image = pygame.transform.rotate(self.sprite.original_image, ((180 / math.pi) * self.a_pos))
-        offset_rotated = self.rot_off.rotate(-((180 / math.pi) * self.a_pos))
+        offset_rotated = self.rot_off.rotated(-self.a_pos)
         self.sprite.rect = self.sprite.image.get_rect(center=self.pos + offset_rotated)
 
     def update(self) -> None:
@@ -91,7 +91,7 @@ class MachineGun(Weapon):
             bullet_image.fill(RED)
 
             return Bullet(self.damage,
-                          self.pos + pymunk.Vec2d(0, self.barrel_len).rotated(-self.a_pos),
+                          self.pos + (pymunk.Vec2d(0, self.barrel_len / 2 + self.rot_off.y + bullet_image.get_height() / 2)).rotated(-self.a_pos),
                           2500,
                           self.a_pos,
                           bullet_image)
@@ -107,7 +107,7 @@ class RocketLauncher(Weapon):
     current_target: Union[HealthEntity, None]       # the current target locked onto by the launcher
 
     def __init__(self, pos: pymunk.Vec2d, damage: float, atk_cd: int, ammo: float,
-                 rot_off: tuple[int, int], image: pygame.image):
+                 rot_off: pymunk.Vec2d, image: pygame.image):
         Weapon.__init__(self, pos, damage, atk_cd, ammo, rot_off, image)
 
         self.current_target = None
@@ -129,7 +129,7 @@ class RocketLauncher(Weapon):
             return Rocket(self.damage,
                           100,
                           25000,
-                          self.pos + pymunk.Vec2d(0, self.barrel_len).rotated(-self.a_pos),
+                          self.pos + (pymunk.Vec2d(0, self.barrel_len / 2 + self.rot_off.y + rocket_image.get_height() / 2)).rotated(-self.a_pos),
                           750,
                           self.a_pos,
                           rocket_image,
@@ -146,7 +146,7 @@ class LaserCannon(Weapon):
     laser_contact: LaserContact
 
     def __init__(self, pos: pymunk.Vec2d, damage: float, atk_cd: int, laser: Laser, ammo: float,
-                 rot_off: tuple[int, int], image: pygame.image):
+                 rot_off: pymunk.Vec2d, image: pygame.image):
         """
         Initializer
 
@@ -162,8 +162,8 @@ class LaserCannon(Weapon):
         self.damage = damage
         self.ammo = ammo
         self.laser = laser
-        self.rot_off = pygame.math.Vector2(rot_off)
-        self.barrel_len = self.sprite.rect.h - 27
+        self.rot_off = rot_off
+        self.barrel_len = self.sprite.rect.h
         self.laser_contact = None
 
     def update(self) -> None:
@@ -188,12 +188,12 @@ class LaserCannon(Weapon):
         contact_image = pygame.transform.scale(contact_image, [50, 50])
 
         if self.laser is None:
-            self.laser = Laser(100, self.pos + pymunk.Vec2d(0, self.barrel_len).rotated(-self.a_pos),
+            self.laser = Laser(100, self.pos + (pymunk.Vec2d(0, self.barrel_len / 2 + self.rot_off.y)).rotated(-self.a_pos),
                                self.a_pos, 2000, self.barrel_len, block_image)
             self.laser_contact = LaserContact(Sprite(pymunk.Vec2d(0, 0), contact_image), pymunk.Vec2d(0, 0))
             return self.laser
         else:
-            self.laser.pos = self.pos
+            self.laser.pos = self.pos + (pymunk.Vec2d(0, self.barrel_len / 2 + self.rot_off.y)).rotated(-self.a_pos)
             self.laser.a_pos = self.a_pos
 
 
