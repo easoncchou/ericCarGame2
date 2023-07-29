@@ -313,17 +313,14 @@ class Game:
 
             if line.intersects(poly):
                 # collides
-                closest_dist = abs(self.car.wep.laser.pos - contact)
-                current_dist = abs(self.car.wep.laser.pos - enemy.pos)
-                if current_dist < closest_dist:
-                    closest_enemy = enemy
-                    intersections = shapely.intersection(line, poly).coords
-                    # get closest intersection
-                    for point in intersections:
-                        dist = abs(self.car.wep.laser.pos - point)
-                        if dist < closest_distance:
-                            closest_distance = dist
-                            contact = point
+                intersections = shapely.intersection(line, poly).coords
+                # get closest intersection
+                for point in intersections:
+                    dist = abs(self.car.wep.laser.pos - point)
+                    if dist < closest_distance:
+                        closest_distance = dist
+                        contact = point
+                        closest_enemy = enemy
 
         # calculate and perform the laser's damage if it hits an enemy
         return contact, closest_enemy
