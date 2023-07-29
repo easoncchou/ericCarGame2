@@ -304,7 +304,7 @@ class Game:
         barrier_definition = shapely.LineString([[0, 0], [MAP_WIDTH, 0], [MAP_WIDTH, MAP_HEIGHT], [0, MAP_HEIGHT], [0, 0]])
         if line.intersects(barrier_definition):
             wall_contact = shapely.intersection(line, barrier_definition).coords
-            self.car.wep.laser.length = abs(self.car.wep.laser.pos + pymunk.Vec2d(0, self.car.wep.barrel_len).rotated(-self.car.wep.a_pos) - wall_contact[0])
+            self.car.wep.laser.length = abs(self.car.wep.laser.pos - wall_contact[0])
 
         # determine the length of the laser if it were to hit an enemy
         closest = None
@@ -321,7 +321,7 @@ class Game:
                     intersections = shapely.intersection(line, poly).coords
                     # get closest intersection
                     for point in intersections:
-                        dist = abs(self.car.wep.laser.pos + pymunk.Vec2d(0, self.car.wep.barrel_len).rotated(-self.car.wep.a_pos) - point)
+                        dist = abs(self.car.wep.laser.pos - point)
                         if dist < closest_distance:
                             closest_distance = dist
                             enemy_contact = point
@@ -333,7 +333,7 @@ class Game:
                         intersections = shapely.intersection(line, poly).coords
                         # get closest intersection
                         for point in intersections:
-                            dist = abs(self.car.wep.laser.pos + pymunk.Vec2d(0, self.car.wep.barrel_len).rotated(-self.car.wep.a_pos) - point)
+                            dist = abs(self.car.wep.laser.pos - point)
                             if dist < closest_distance:
                                 closest_distance = dist
                                 enemy_contact = point
