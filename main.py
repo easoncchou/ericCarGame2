@@ -40,7 +40,7 @@ if __name__ == '__main__':
     wep3 = LaserCannon(init_pos, 5, 0, None, 500, pymunk.Vec2d(0, 25), cannon_image)
 
     # add wep to car and car to game
-    car.set_weapon(wep3)
+    car.set_weapon(wep2)
     game.set_car(car)
 
     # add target

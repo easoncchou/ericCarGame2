@@ -345,6 +345,9 @@ class Game:
                 if ent.hp <= 0:
                     self.delete_target(ent)
                     self.delete_entity(ent.hp_bar)
+
+                    if isinstance(self.car.wep, RocketLauncher):
+                        self.car.wep.current_target = None
             elif isinstance(ent, Explosion):
                 if ent.lifespan <= 0:
                     self.delete_entity(ent)
