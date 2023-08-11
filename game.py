@@ -87,6 +87,7 @@ class Game:
 
             self.add_entity(proj.explode())
             self.delete_proj(proj)
+            #TODO: fix a bug where if the rocket goes right between the middle of two entities and explodes, tries to remove x not in list
 
             return True
 
@@ -250,6 +251,7 @@ class Game:
         """
 
         if self.car.wep.current_target is None:
+            self.car.wep.targeting_status = 0
             for enemy in self.enemies:
                 # check if the mouse is within a radius of the enemy
                 if abs(pymunk.Vec2d(x, y) - enemy.pos) < 100:
