@@ -28,7 +28,9 @@ class Game:
     enemies: list[HealthEntity]
     projs: list[Projectile]
 
-    def __init__(self, width: int, height: int) -> None:
+    def __init__(self, screen: pygame.display = None,
+                 all_sprites_group: pygame.sprite.Group = None,
+                 _id: int = -1) -> None:
         """
         Initializer
 
@@ -36,29 +38,36 @@ class Game:
         :param height: height of the screen
         """
 
-        pygame.init()
+        self.screen = screen
+        self.all_sprites_group = all_sprites_group
+        width, height = MAP_WIDTH, MAP_HEIGHT
+
         self.space = pymunk.Space()
         self.space.damping = 0.7
 
         # add walls
         # Create a ground shape (a segment in this case)
-        bottom_wall_shape = pymunk.Segment(self.space.static_body, (0, 0), (0, height), 1)
+        bottom_wall_shape = pymunk.Segment(self.space.static_body, (0, 0),
+                                           (0, height), 1)
         bottom_wall_shape.collision_type = COLLTYPE_WALL
         self.space.add(bottom_wall_shape)
 
         # Create other walls or boundaries as needed
         # Example: A left wall
-        left_wall_shape = pymunk.Segment(self.space.static_body, (0, height), (width, height), 1)
+        left_wall_shape = pymunk.Segment(self.space.static_body, (0, height),
+                                         (width, height), 1)
         left_wall_shape.collision_type = COLLTYPE_WALL
         self.space.add(left_wall_shape)
 
         # Example: A right wall
-        right_wall_shape = pymunk.Segment(self.space.static_body, (width, height), (width, 0), 1)
+        right_wall_shape = pymunk.Segment(self.space.static_body,
+                                          (width, height), (width, 0), 1)
         right_wall_shape.collision_type = COLLTYPE_WALL
         self.space.add(right_wall_shape)
 
         # Example: A ceiling
-        top_wall_shape = pymunk.Segment(self.space.static_body, (width, 0), (0, 0), 1)
+        top_wall_shape = pymunk.Segment(self.space.static_body, (width, 0),
+                                        (0, 0), 1)
         top_wall_shape.collision_type = COLLTYPE_WALL
         self.space.add(top_wall_shape)
 
@@ -73,7 +82,8 @@ class Game:
 
             return True
 
-        bullet_handler = self.space.add_collision_handler(COLLTYPE_BULLETPROJ, COLLTYPE_ENEM)
+        bullet_handler = self.space.add_collision_handler(COLLTYPE_BULLETPROJ,
+                                                          COLLTYPE_ENEM)
         bullet_handler.begin = bullet_coll
 
         def rocket_coll(arbiter, space, data):
@@ -83,14 +93,16 @@ class Game:
                 if abs(enemy.pos - proj.pos) <= proj.explosion_radius:
                     enemy.hp -= proj.damage
                     # assume that the enemy has a body
-                    enemy.body.apply_impulse_at_local_point((enemy.pos - proj.pos).normalized() * proj.explosion_force)
+                    enemy.body.apply_impulse_at_local_point((
+                                                                        enemy.pos - proj.pos).normalized() * proj.explosion_force)
 
             self.add_entity(proj.explode())
             self.delete_proj(proj)
 
             return True
 
-        rocket_handler = self.space.add_collision_handler(COLLTYPE_ROCKETPROJ, COLLTYPE_ENEM)
+        rocket_handler = self.space.add_collision_handler(COLLTYPE_ROCKETPROJ,
+                                                          COLLTYPE_ENEM)
         rocket_handler.begin = rocket_coll
 
         def bullet_wall_coll(arbiter, space, data):
@@ -99,20 +111,18 @@ class Game:
 
             return True
 
-        bullet_wall_handler = self.space.add_collision_handler(COLLTYPE_BULLETPROJ, COLLTYPE_WALL)
+        bullet_wall_handler = self.space.add_collision_handler(
+            COLLTYPE_BULLETPROJ, COLLTYPE_WALL)
         bullet_wall_handler.begin = bullet_wall_coll
 
-        rocket_wall_handler = self.space.add_collision_handler(COLLTYPE_ROCKETPROJ, COLLTYPE_WALL)
+        rocket_wall_handler = self.space.add_collision_handler(
+            COLLTYPE_ROCKETPROJ, COLLTYPE_WALL)
         rocket_wall_handler.begin = rocket_coll
 
-        self.done = False
-        self.size = (width, height)
-        self.screen = pygame.display.set_mode(self.size)
-        self.clock = pygame.time.Clock()
-        self.all_sprites_group = pygame.sprite.Group()
-
+        self.id = _id
         self.car = None
         self.ents = []
+        self.cars = {}
         self.enemies = []
         self.projs = []
 
@@ -120,19 +130,24 @@ class Game:
 
         # can set title later
 
-    def set_car(self, car: Car2) -> None:
+    def add_car(self, car: Car2, _id: int) -> None:
         """
         Adds a car to self.cars
 
         :param car: Car to add
+        :param _id: id of the Car to add
         :return: None
         """
 
-        self.car = car
-        self.all_sprites_group.add(car.sprite)
-        self.all_sprites_group.add(car.wep.sprite)
-        self.ents.append(car)
+        self.cars[_id] = car
 
+        if self.id == _id:
+            self.car = car
+
+        if self.all_sprites_group is not None:
+            self.all_sprites_group.add(car.sprite)
+            self.all_sprites_group.add(car.wep.sprite)
+        self.ents.append(car)
         self.add_entity(car.hp_bar)
 
     def add_entity(self, ent: GenericEntity) -> None:
@@ -142,7 +157,8 @@ class Game:
         :param ent: Entity to add
         :return:
         """
-        self.all_sprites_group.add(ent.sprite)
+        if self.all_sprites_group is not None:
+            self.all_sprites_group.add(ent.sprite)
         self.ents.append(ent)
 
     def delete_entity(self, ent: GenericEntity) -> None:
@@ -153,7 +169,8 @@ class Game:
         :return: None
         """
 
-        self.all_sprites_group.remove(ent.sprite)
+        if self.all_sprites_group is not None:
+            self.all_sprites_group.remove(ent.sprite)
         self.ents.remove(ent)
 
     def add_target(self, target: Target) -> None:
@@ -215,8 +232,9 @@ class Game:
         # render
         self.screen.fill(WHITE)
 
-        self.all_sprites_group.update()
-        self.all_sprites_group.draw(self.screen)
+        if self.all_sprites_group is not None:
+            self.all_sprites_group.update()
+            self.all_sprites_group.draw(self.screen)
 
         # debug pymunk
         options = pymunk.pygame_util.DrawOptions(self.screen)
@@ -224,7 +242,8 @@ class Game:
 
         # debug speedometer todo remove later
         font = pygame.font.SysFont(None, 48)
-        img = font.render(str(round(abs(self.car.body.velocity), 1)), True, BLUE)
+        img = font.render(str(round(abs(self.car.body.velocity), 1)), True,
+                          BLUE)
         self.screen.blit(img, (MAP_WIDTH - 120, MAP_HEIGHT - 80))
 
         body_a = (-self.car.body.rotation_vector.angle) % (2 * math.pi)
@@ -237,7 +256,8 @@ class Game:
             img = font.render('back', True, BLUE)
             self.screen.blit(img, (MAP_WIDTH - 120, MAP_HEIGHT - 160))
 
-        img = font.render(str(round(self.car.body.rotation_vector.angle, 4)), True, BLUE)
+        img = font.render(str(round(self.car.body.rotation_vector.angle, 4)),
+                          True, BLUE)
         self.screen.blit(img, (MAP_WIDTH - 120, MAP_HEIGHT - 200))
 
         # update display
@@ -266,10 +286,12 @@ class Game:
 
                     if self.reticle is None:
                         reticle_image = pygame.image.load("assets/reticle1.png")
-                        reticle_image = pygame.transform.scale(reticle_image, [140, 100])
+                        reticle_image = pygame.transform.scale(reticle_image,
+                                                               [140, 100])
                         reticle_pos = self.car.wep.current_target.pos
                         reticle_sprite = Sprite(reticle_pos, reticle_image)
-                        self.reticle = Reticle(reticle_pos, reticle_sprite, self.car.wep.current_target)
+                        self.reticle = Reticle(reticle_pos, reticle_sprite,
+                                               self.car.wep.current_target)
                     else:
                         self.reticle.current_target = self.car.wep.current_target
 
@@ -293,11 +315,15 @@ class Game:
 
         self.car.wep: LaserCannon
 
-        contact = self.car.wep.laser.pos + pymunk.Vec2d(0, self.car.wep.laser.max_length).rotated(-self.car.wep.laser.a_pos)
+        contact = self.car.wep.laser.pos + pymunk.Vec2d(0,
+                                                        self.car.wep.laser.max_length).rotated(
+            -self.car.wep.laser.a_pos)
         line = shapely.LineString([self.car.wep.laser.pos, contact])
 
         # determine the length of the laser if it were to hit a wall
-        barrier_definition = shapely.LineString([[0, 0], [MAP_WIDTH, 0], [MAP_WIDTH, MAP_HEIGHT], [0, MAP_HEIGHT], [0, 0]])
+        barrier_definition = shapely.LineString(
+            [[0, 0], [MAP_WIDTH, 0], [MAP_WIDTH, MAP_HEIGHT], [0, MAP_HEIGHT],
+             [0, 0]])
         wall_contact = shapely.intersection(line, barrier_definition).coords
 
         if len(wall_contact) == 1:
@@ -309,7 +335,8 @@ class Game:
 
         for enemy in self.enemies:
             # print([point + enemy.pos for point in enemy.shape.get_vertices()])
-            poly = shapely.Polygon([point + enemy.pos for point in enemy.shape.get_vertices()])
+            poly = shapely.Polygon(
+                [point + enemy.pos for point in enemy.shape.get_vertices()])
 
             if line.intersects(poly):
                 # collides
@@ -363,11 +390,6 @@ class Game:
         :return: None
         """
 
-        # handle events
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.done = True
-
         # handle keyboard
         #   better to handle this way to account for holding down key
         #   presses
@@ -389,14 +411,15 @@ class Game:
         # handle mouse
         x, y = pygame.mouse.get_pos()
 
-        self.car.wep.a_pos = -(pymunk.Vec2d(x, y) - self.car.pos).angle + math.pi / 2
+        self.car.wep.a_pos = -(
+                    pymunk.Vec2d(x, y) - self.car.pos).angle + math.pi / 2
 
         # if the cars current weapon is a rocket launcher, start tracking
         if isinstance(self.car.wep, RocketLauncher):
             self.rl_track(x, y)
 
         m_buttons = pygame.mouse.get_pressed()
-        if m_buttons[0]: # pressed down left mouse button
+        if m_buttons[0]:  # pressed down left mouse button
             # attempt to shoot
             new_proj = self.car.wep.shoot()
 
@@ -405,7 +428,8 @@ class Game:
                 # calculate the length of the laser beam sprite based on collision
                 laser_contact_pos, closest_enemy = self.laser_collide()
                 self.car.wep.laser_contact.pos = laser_contact_pos
-                self.car.wep.laser.length = abs(self.car.wep.laser.pos - laser_contact_pos)
+                self.car.wep.laser.length = abs(
+                    self.car.wep.laser.pos - laser_contact_pos)
 
                 if closest_enemy is not None:
                     if self.car.wep.curr_atk_cd <= 0:
@@ -420,21 +444,9 @@ class Game:
             else:
                 if new_proj is not None:
                     self.add_proj(new_proj)
-        else: # let go of left mouse button
-            if isinstance(self.car.wep, LaserCannon) and self.car.wep.laser is not None:
+        else:  # let go of left mouse button
+            if isinstance(self.car.wep,
+                          LaserCannon) and self.car.wep.laser is not None:
                 self.delete_entity(self.car.wep.laser)
                 self.delete_entity(self.car.wep.laser_contact)
                 self.car.wep.laser = None
-
-    def run_game_loop(self) -> None:
-        """
-        Runs the game loop
-
-        :return: None
-        """
-
-        while not self.done:
-            self.handle_input()
-            self.update()
-            self.render()
-            self.clock.tick(TICKRATE)
