@@ -366,6 +366,8 @@ class Game:
 
         # update all entities
         for ent in self.ents:
+            ent.car_pos = self.car.pos
+            ent.find_relative_pos()
             ent.update()
 
             if isinstance(ent, Target):
@@ -412,7 +414,7 @@ class Game:
         x, y = pygame.mouse.get_pos()
 
         self.car.wep.a_pos = -(
-                    pymunk.Vec2d(x, y) - self.car.pos).angle + math.pi / 2
+                    pymunk.Vec2d(x, y) - self.car.screen_pos).angle + math.pi / 2
 
         # if the cars current weapon is a rocket launcher, start tracking
         if isinstance(self.car.wep, RocketLauncher):

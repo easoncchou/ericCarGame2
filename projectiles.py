@@ -62,7 +62,7 @@ class Projectile(GenericEntity):
 
         self.sprite.image = pygame.transform.rotate(self.sprite.original_image,
                                                     -self.body.rotation_vector.angle_degrees)
-        self.sprite.rect = self.sprite.image.get_rect(center=self.body.position)
+        self.sprite.rect = self.sprite.image.get_rect(center=self.screen_pos)
 
     def update(self) -> None:
         """
@@ -71,6 +71,7 @@ class Projectile(GenericEntity):
         """
 
         self.update_sprite()
+        self.pos = self.body.position
 
 
 class Bullet(Projectile):
@@ -234,5 +235,5 @@ class Laser(Projectile):
         offset_rotated = rot_off.rotated(-self.a_pos)
 
         self.sprite.image = pygame.transform.rotate(self.sprite.original_image, ((180 / math.pi) * self.a_pos))
-        self.sprite.rect = self.sprite.image.get_rect(center=self.pos + offset_rotated)
+        self.sprite.rect = self.sprite.image.get_rect(center=self.screen_pos + offset_rotated)
 

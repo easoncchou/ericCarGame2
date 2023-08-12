@@ -1,5 +1,5 @@
 import asyncio
-import uvloop
+# import uvloop
 import multiprocessing
 import pymunk
 import json
@@ -167,7 +167,7 @@ def run_client_loop(conn):
 
 
 if __name__ == "__main__":
-    uvloop.install()
+    # uvloop.install()
 
     game_conn, h_input_conn = multiprocessing.Pipe()
 

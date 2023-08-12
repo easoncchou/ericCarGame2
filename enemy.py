@@ -54,7 +54,7 @@ class Target(HealthEntity):
 
         self.sprite.image = pygame.transform.rotate(self.sprite.original_image,
                                                     -self.body.rotation_vector.angle_degrees)
-        self.sprite.rect = self.sprite.image.get_rect(center=self.body.position)
+        self.sprite.rect = self.sprite.image.get_rect(center=self.screen_pos)
 
     def update(self) -> None:
         """

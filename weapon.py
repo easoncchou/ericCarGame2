@@ -52,9 +52,11 @@ class Weapon(GenericEntity):
         :return: None
         """
 
+        center_screen = pymunk.Vec2d(MAP_WIDTH / 2, MAP_HEIGHT / 2)
         self.sprite.image = pygame.transform.rotate(self.sprite.original_image, ((180 / math.pi) * self.a_pos))
         offset_rotated = self.rot_off.rotated(-self.a_pos)
-        self.sprite.rect = self.sprite.image.get_rect(center=self.pos + offset_rotated)
+        self.sprite.rect = self.sprite.image.get_rect(center=self.screen_pos + offset_rotated)
+        # self.sprite.rect = self.sprite.image.get_rect(center=center_screen + offset_rotated)
 
     def update(self) -> None:
         """
@@ -88,7 +90,7 @@ class MachineGun(Weapon):
             self.curr_atk_cd = self.atk_cd
 
             bullet_image = pygame.surface.Surface((2, 80))
-            bullet_image.fill(RED)
+            bullet_image.fill(BULLET_ORANGE)
 
             return Bullet(self.damage,
                           self.pos + (pymunk.Vec2d(0, self.barrel_len / 2 + self.rot_off.y + bullet_image.get_height() / 2)).rotated(-self.a_pos),

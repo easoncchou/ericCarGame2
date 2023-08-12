@@ -6,6 +6,7 @@ from typing import Union
 from weapon import Weapon
 from entities import HealthEntity
 from sprite import Sprite
+from constants import *
 
 
 class Car2(HealthEntity):
@@ -167,9 +168,10 @@ class Car2(HealthEntity):
         :return: None
         """
 
+        center_screen = pymunk.Vec2d(MAP_WIDTH / 2 - 20, MAP_HEIGHT / 2 - 20)
         self.sprite.image = pygame.transform.rotate(self.sprite.original_image,
                                                     -self.body.rotation_vector.angle_degrees)
-        self.sprite.rect = self.sprite.image.get_rect(center=self.body.position)
+        self.sprite.rect = self.sprite.image.get_rect(center=self.screen_pos)
 
     def update(self) -> None:
         """
@@ -181,6 +183,8 @@ class Car2(HealthEntity):
         self.pos = self.body.position
         self.update_grooves()
         self.update_sprite()
-        self.wep.update()
         self.hp_bar.update()
         self.wep.pos = self.pos
+        self.wep.car_pos = self.pos
+        self.wep.find_relative_pos()
+        self.wep.update()

@@ -5,7 +5,6 @@ import pymunk
 from constants import *
 from sprite import Sprite
 
-
 class GenericEntity:
     """
     An entity with a sprite
@@ -23,6 +22,8 @@ class GenericEntity:
         self.sprite = sprite
         self.pos = pos
         self.a_pos = a_pos
+        self.car_pos = pymunk.Vec2d(0, 0)
+        self.screen_pos = pymunk.Vec2d(0, 0)
 
     def update_sprite(self) -> None:
         """
@@ -41,6 +42,16 @@ class GenericEntity:
         """
 
         raise NotImplementedError
+
+    def find_relative_pos(self) -> None:
+        """
+        Update the position value of the entity to be relative to the car's position
+
+        :return: None
+        """
+
+        center_screen = pymunk.Vec2d(MAP_WIDTH / 2, MAP_HEIGHT / 2)
+        self.screen_pos = self.pos - self.car_pos + center_screen
 
 
 class HealthEntity(GenericEntity):
@@ -119,7 +130,7 @@ class HealthBar(GenericEntity):
         :return:
         """
 
-        self.sprite.rect = self.sprite.image.get_rect(center=self.pos)
+        self.sprite.rect = self.sprite.image.get_rect(center=self.screen_pos)
 
     def update(self) -> None:
         """
@@ -154,7 +165,7 @@ class Reticle(GenericEntity):
         :return:
         """
 
-        self.sprite.rect = self.sprite.image.get_rect(center=self.pos)
+        self.sprite.rect = self.sprite.image.get_rect(center=self.screen_pos)
 
     def update(self) -> None:
         """
@@ -203,7 +214,7 @@ class LaserContact(GenericEntity):
         :return:
         """
 
-        self.sprite.rect = self.sprite.image.get_rect(center=self.pos)
+        self.sprite.rect = self.sprite.image.get_rect(center=self.screen_pos)
 
 
 
