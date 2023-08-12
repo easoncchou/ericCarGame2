@@ -158,7 +158,7 @@ def run_client_loop(conn):
         car_info = {'pos': game.car.body.position, 'a_pos': game.car.body.angle,
                     'vel': game.car.body.velocity,
                     'steering_angle': game.car.steering_angle,
-                    'wep_angle': car.wep.a_pos}
+                    'wep_angle': game.car.wep.a_pos}
 
         conn.send(json.dumps(car_info).encode())
 
