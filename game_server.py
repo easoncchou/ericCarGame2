@@ -1,5 +1,4 @@
 import asyncio
-import uvloop
 import multiprocessing
 import pymunk
 import json
@@ -195,8 +194,6 @@ async def run_server(ctx):
 
 
 if __name__ == "__main__":
-    uvloop.install()
-
     gs_conn1, gs_conn2 = multiprocessing.Pipe()
     cp_conn1, cp_conn2 = multiprocessing.Pipe()
 

@@ -369,8 +369,9 @@ class Game:
 
         # update all entities
         for ent in self.ents:
-            ent.car_pos = self.car.pos
-            ent.find_relative_pos()
+            if self.id != -1:
+                ent.car_pos = self.car.pos
+                ent.find_relative_pos()
             ent.update()
 
             if isinstance(ent, Target):
