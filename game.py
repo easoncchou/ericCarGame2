@@ -24,6 +24,7 @@ class Game:
     done: bool
     size: tuple[int, int]
     car: Union[Car2, None]
+    cars: dict[int, Car2]
     ents: list[GenericEntity]
     enemies: list[HealthEntity]
     projs: list[Projectile]
@@ -362,6 +363,8 @@ class Game:
 
         # tick physics
         for i in range(phys_tick):
+            for _id, car in self.cars.items():
+                car.update_grooves()
             self.space.step(1 / TICKRATE / phys_tick)
 
         # update all entities
