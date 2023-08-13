@@ -228,8 +228,30 @@ class Game:
 
         :return: None
         """
-        # render
-        self.screen.fill(WHITE)
+
+        tile_dim = pymunk.Vec2d(100, 100)
+        tile = pygame.Surface(tile_dim)
+        tile.fill(BLACK)
+        sub_tile = pygame.Surface(tile_dim // 2)
+        sub_tile.fill(MAGENTA)
+        tile.blit(sub_tile, (0, 0))
+        tile.blit(sub_tile, tile_dim // 2)
+
+        x_off = (-self.car.pos.x) % tile_dim.x
+        y_off = (-self.car.pos.y) % tile_dim.y
+
+        # vert tile
+        vert_tile = pygame.Surface((tile_dim.x, SCREEN_HEIGHT))
+        curr_y = y_off - tile_dim.y
+        while curr_y < SCREEN_HEIGHT:
+            vert_tile.blit(tile, (0, curr_y))
+            curr_y += tile_dim.y
+
+        # tile screen with vert tile
+        curr_x = x_off - tile_dim.x
+        while curr_x < SCREEN_WIDTH:
+            self.screen.blit(vert_tile, (curr_x, 0))
+            curr_x += tile_dim.x
 
         if self.all_sprites_group is not None:
             self.all_sprites_group.update()

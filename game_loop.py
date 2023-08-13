@@ -14,7 +14,7 @@ def run_game_loop():
     pygame.init()
 
     done = False
-    size = (MAP_WIDTH, MAP_HEIGHT)
+    size = (SCREEN_WIDTH, SCREEN_HEIGHT)
     screen = pygame.display.set_mode(size)
     all_sprites_group = pygame.sprite.Group()
     clock = pygame.time.Clock()
