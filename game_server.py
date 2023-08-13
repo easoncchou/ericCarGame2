@@ -72,7 +72,7 @@ class ClientContext:
                     message['id'] = _id
 
                     self.cp_conn.send(json.dumps(message).encode())
-                except asyncio.IncompleteReadError as e:
+                except Exception as e:
                     print(f'Error: {e}')
 
         async def send_data():

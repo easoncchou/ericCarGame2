@@ -22,7 +22,7 @@ async def handle_server(conn):
         data = await net.read_message(reader)
         print(f'Received response from server: {data.decode()}')
         conn.send(data)
-    except asyncio.IncompleteReadError as e:
+    except Exception as e:
         print(f'Error: {e}')
         writer.close()
         await writer.wait_closed()
@@ -35,8 +35,11 @@ async def handle_server(conn):
 
                 print(f'Received response from server: {data.decode()}')
                 conn.send(data)
-            except asyncio.IncompleteReadError as e:
+            except Exception as e:
                 print(f'Error: {e}')
+                writer.close()
+                await writer.wait_closed()
+                return
 
     async def send_data():
         while True:

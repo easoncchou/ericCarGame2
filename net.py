@@ -4,7 +4,7 @@ BUFFER_SIZE = 4
 
 
 async def write_message(writer, msg: bytes) -> None:
-    writer.write(str(len(msg)).encode().ljust(BUFFER_SIZE) + msg)
+    writer.write(str(len(msg) + 1).encode().ljust(BUFFER_SIZE) + msg + b'\n')
     await writer.drain()
 
 
@@ -13,6 +13,12 @@ async def read_message(reader) -> bytes:
 
     if not buf:
         raise asyncio.IncompleteReadError(buf, BUFFER_SIZE)
+
+    try:
+        int(buf)
+    except ValueError as e:
+        await reader.readuntil(separator=b'\n')
+        raise Exception('Partial message')
 
     msg_data = await reader.read(int(buf) + BUFFER_SIZE)
 
