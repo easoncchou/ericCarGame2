@@ -62,8 +62,10 @@ class ClientContext:
         # create the car
         self.gs_conn.send({'type': 'add_car', 'data': _id})
 
-        async def receive_data():
-            while True:
+        event = asyncio.Event()
+
+        async def receive_data(event: asyncio.Event):
+            while not event.is_set():
                 try:
                     data = await net.read_message(client_reader)
 
@@ -72,11 +74,14 @@ class ClientContext:
                     message['id'] = _id
 
                     self.cp_conn.send(json.dumps(message).encode())
+                except ConnectionError as e:
+                    print(f'{type(e).__name__} while receiving: {e}')
+                    event.set()
                 except Exception as e:
-                    print(f'Error: {e}')
+                    print(f'{type(e).__name__} while receiving: {e}')
 
-        async def send_data():
-            while True:
+        async def send_data(event: asyncio.Event):
+            while not event.is_set():
                 await asyncio.sleep(0)
                 if self.cp_conn.poll():
                     msg = self.cp_conn.recv()
@@ -87,8 +92,8 @@ class ClientContext:
                     for __id, client in self.clients.items():
                         await net.write_message(client, msg)
 
-        receive_task = asyncio.create_task(receive_data())
-        send_task = asyncio.create_task(send_data())
+        receive_task = asyncio.create_task(receive_data(event))
+        send_task = asyncio.create_task(send_data(event))
 
         try:
             await asyncio.gather(receive_task, send_task)
@@ -98,8 +103,13 @@ class ClientContext:
             print(f"Error with client {_id}: {e}")
         finally:
             self.remove_client(_id)
-            client_writer.close()
-            await client_writer.wait_closed()
+
+            try:
+                client_writer.close()
+                await client_writer.wait_closed()
+            except Exception as e:
+                print(f'{type(e).__name__} while closing: {e}')
+
             print(f"Connection from {_id} closed")
 
 

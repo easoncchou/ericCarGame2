@@ -23,33 +23,32 @@ async def handle_server(conn):
         print(f'Received response from server: {data.decode()}')
         conn.send(data)
     except Exception as e:
-        print(f'Error: {e}')
+        print(f'{type(e).__name__} while initializing: {e}')
         writer.close()
         await writer.wait_closed()
         return
 
-    async def receive_data():
-        while True:
+    event = asyncio.Event()
+
+    async def receive_data(event: asyncio.Event):
+        while not event.is_set():
             try:
                 data = await net.read_message(reader)
 
                 print(f'Received response from server: {data.decode()}')
                 conn.send(data)
             except Exception as e:
-                print(f'Error: {e}')
-                writer.close()
-                await writer.wait_closed()
-                return
+                print(f'{type(e).__name__} while receiving: {e}')
 
-    async def send_data():
-        while True:
+    async def send_data(event: asyncio.Event):
+        while not event.is_set():
             await asyncio.sleep(0)
             if conn.poll():
                 msg = conn.recv()
                 await net.write_message(writer, msg)
 
-    receive_task = asyncio.create_task(receive_data())
-    send_task = asyncio.create_task(send_data())
+    receive_task = asyncio.create_task(receive_data(event))
+    send_task = asyncio.create_task(send_data(event))
 
     try:
         await asyncio.gather(receive_task, send_task)
