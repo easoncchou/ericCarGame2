@@ -145,10 +145,8 @@ class Game:
         if self.id == _id:
             self.car = car
 
-        if self.all_sprites_group is not None:
-            self.all_sprites_group.add(car.sprite)
-            self.all_sprites_group.add(car.wep.sprite)
-        self.ents.append(car)
+        self.add_entity(car)
+        self.add_entity(car.wep)
         self.add_entity(car.hp_bar)
 
     def add_entity(self, ent: GenericEntity) -> None:
@@ -372,6 +370,7 @@ class Game:
             if self.id != -1:
                 ent.car_pos = self.car.pos
                 ent.find_relative_pos()
+
             ent.update()
 
             if isinstance(ent, Target):

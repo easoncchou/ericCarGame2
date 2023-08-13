@@ -185,6 +185,3 @@ class Car2(HealthEntity):
         self.update_sprite()
         self.hp_bar.update()
         self.wep.pos = self.pos
-        self.wep.car_pos = self.pos
-        self.wep.find_relative_pos()
-        self.wep.update()
