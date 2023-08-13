@@ -156,7 +156,7 @@ def run_client_loop(conn):
 
             if msg.get('update_cars') is not None:
                 for _id, car_info in msg.get('update_cars').items():
-                    if int(_id) != game.id:
+                    if int(_id) != game.id and game.cars.get(int(_id)) is not None:
                         car = game.cars[int(_id)]
                         car.body.position = pymunk.Vec2d(car_info['pos'][0], car_info['pos'][1])
                         car.body.angle = car_info['a_pos']
