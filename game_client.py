@@ -5,6 +5,7 @@ import pymunk
 import json
 
 from constants import *
+from ip_addr import *
 import net
 
 from game import Game

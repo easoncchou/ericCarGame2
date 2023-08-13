@@ -4,6 +4,7 @@ import pymunk
 import json
 
 from constants import *
+from ip_addr import *
 import net
 
 from game import Game
@@ -178,7 +179,7 @@ def run_server_game_loop(gs_conn, cp_conn):
         cp_conn.send(json.dumps(out_msg).encode())
 
         game.update()
-        clock.tick(60)
+        clock.tick(TICKRATE)
 
 
 async def run_server(ctx):

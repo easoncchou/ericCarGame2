@@ -1,6 +1,3 @@
-HOST = 'localhost'
-PORT = 12345
-
 TICKRATE = 60
 
 # COLORS
