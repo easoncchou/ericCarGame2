@@ -1,3 +1,5 @@
+import asyncio
+
 BUFFER_SIZE = 4
 
 
@@ -8,7 +10,14 @@ async def write_message(writer, msg: bytes) -> None:
 
 async def read_message(reader) -> bytes:
     buf = await reader.read(BUFFER_SIZE)
+
+    if not buf:
+        raise asyncio.IncompleteReadError(buf, BUFFER_SIZE)
+
     msg_data = await reader.read(int(buf) + BUFFER_SIZE)
+
+    if not msg_data:
+        raise asyncio.IncompleteReadError(msg_data, int(buf))
 
     while len(msg_data) != int(buf):
         buf = msg_data[int(buf):]

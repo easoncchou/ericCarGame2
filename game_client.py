@@ -18,15 +18,25 @@ async def handle_server(conn):
     reader, writer = await asyncio.open_connection(HOST, PORT)
 
     # on start-up, server will send {'id': x, 'init_pos': [x, y]}
-    data = await net.read_message(reader)
-    print(f"Received response from server: {data.decode()}")
-    conn.send(data)
+    try:
+        data = await net.read_message(reader)
+        print(f'Received response from server: {data.decode()}')
+        conn.send(data)
+    except asyncio.IncompleteReadError as e:
+        print(f'Error: {e}')
+        writer.close()
+        await writer.wait_closed()
+        return
 
     async def receive_data():
         while True:
-            data = await net.read_message(reader)
-            print(f"Received response from server: {data.decode()}")
-            conn.send(data)
+            try:
+                data = await net.read_message(reader)
+
+                print(f'Received response from server: {data.decode()}')
+                conn.send(data)
+            except asyncio.IncompleteReadError as e:
+                print(f'Error: {e}')
 
     async def send_data():
         while True:
@@ -43,7 +53,7 @@ async def handle_server(conn):
     except asyncio.CancelledError:
         pass
     except Exception as e:
-        print(f"{e}")
+        print(f'Error: {e}')
     finally:
         writer.close()
         await writer.wait_closed()
@@ -73,7 +83,7 @@ def run_client_loop(conn):
                             msg['init']['init_pos'][1])
 
     # load the image for the car
-    car_image = pygame.image.load("assets/car1.png")
+    car_image = pygame.image.load('assets/car1.png')
     # Resize
     car_image = pygame.transform.scale(
         car_image,
@@ -81,7 +91,7 @@ def run_client_loop(conn):
     )
 
     # define the pygame sprite for the machine gun
-    gun_image = pygame.image.load("assets/machine_gun1.png")
+    gun_image = pygame.image.load('assets/machine_gun1.png')
     gun_image = pygame.transform.scale(gun_image, [40, 70])
 
     # create car and wep
@@ -121,7 +131,7 @@ def run_client_loop(conn):
                 for _id, init_pos in msg.get('add_cars').items():
                     init_pos = pymunk.Vec2d(init_pos[0], init_pos[1])
                     # load the image for the car
-                    car_image = pygame.image.load("assets/car1.png")
+                    car_image = pygame.image.load('assets/car1.png')
                     # Resize
                     car_image = pygame.transform.scale(
                         car_image,
@@ -129,7 +139,7 @@ def run_client_loop(conn):
                     )
 
                     # define the pygame sprite for the machine gun
-                    gun_image = pygame.image.load("assets/machine_gun1.png")
+                    gun_image = pygame.image.load('assets/machine_gun1.png')
                     gun_image = pygame.transform.scale(gun_image, [40, 70])
 
                     # create car and wep
@@ -167,7 +177,7 @@ def run_client_loop(conn):
         clock.tick(60)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     # uvloop.install()
 
     game_conn, h_input_conn = multiprocessing.Pipe()

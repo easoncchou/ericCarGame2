@@ -64,13 +64,16 @@ class ClientContext:
 
         async def receive_data():
             while True:
-                data = await net.read_message(client_reader)
+                try:
+                    data = await net.read_message(client_reader)
 
-                message = json.loads(data.decode())
-                print(f"Received from client: {message}")
-                message['id'] = _id
+                    message = json.loads(data.decode())
+                    print(f"Received from client: {message}")
+                    message['id'] = _id
 
-                self.cp_conn.send(json.dumps(message).encode())
+                    self.cp_conn.send(json.dumps(message).encode())
+                except asyncio.IncompleteReadError as e:
+                    print(f'Error: {e}')
 
         async def send_data():
             while True:
