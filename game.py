@@ -94,8 +94,7 @@ class Game:
                 if abs(enemy.pos - proj.pos) <= proj.explosion_radius:
                     enemy.hp -= proj.damage
                     # assume that the enemy has a body
-                    enemy.body.apply_impulse_at_local_point((
-                                                                        enemy.pos - proj.pos).normalized() * proj.explosion_force)
+                    enemy.body.apply_impulse_at_local_point((enemy.pos - proj.pos).normalized() * proj.explosion_force)
 
             self.add_entity(proj.explode())
             self.delete_proj(proj)
