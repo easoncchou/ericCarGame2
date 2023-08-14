@@ -45,14 +45,14 @@ def run_game_loop():
 
     # create car and wep
     car = Car2(game.space, 1000, init_pos, 250, car_image)
-    wep1 = MachineGun(init_pos, 20, 10, 500, pymunk.Vec2d(-4, 15), gun_image)
-    wep2 = RocketLauncher(init_pos, 300, 60, 500, pymunk.Vec2d(0, 18),
+    wep1 = MachineGun(init_pos, 20, 10, 100, pymunk.Vec2d(-4, 15), gun_image)
+    wep2 = RocketLauncher(init_pos, 300, 60, 25, pymunk.Vec2d(0, 18),
                           launcher_image)
-    wep3 = LaserCannon(init_pos, 5, 0, None, 500, pymunk.Vec2d(0, 25),
+    wep3 = LaserCannon(init_pos, 5, 0, None, 200, pymunk.Vec2d(0, 25),
                        cannon_image)
 
     # add wep to car and car to game
-    car.set_weapon(wep1)
+    car.set_weapon(wep2)
     game.add_car(car, 0)
 
     # add target
@@ -64,7 +64,7 @@ def run_game_loop():
                             1500, target_image)
 
     game.add_target(target1)
-    game.add_target(target2)
+    # game.add_target(target2)
 
     while not done:
         # handle events

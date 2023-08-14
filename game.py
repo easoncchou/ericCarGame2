@@ -41,7 +41,7 @@ class Game:
 
         self.screen = screen
         self.all_sprites_group = all_sprites_group
-        width, height = MAP_WIDTH, MAP_HEIGHT
+        width, height = MAP_WIDTH * 3, MAP_HEIGHT * 3
 
         self.space = pymunk.Space()
         self.space.damping = 0.7
@@ -281,10 +281,14 @@ class Game:
                           True, BLUE)
         self.screen.blit(img, (MAP_WIDTH - 120, MAP_HEIGHT - 200))
 
+        # ammo counter
+        img = font.render(str(round(self.car.wep.ammo)), True, YELLOW)
+        self.screen.blit(img, (MAP_WIDTH - 120, MAP_HEIGHT - 260))
+
         # update display
         pygame.display.flip()
 
-    def rl_track(self, x: int, y: int) -> None:
+    def rl_track(self, vec: pymunk.Vec2d) -> None:
         """
         Tracking function for RocketLauncher
         :return: None
@@ -293,11 +297,11 @@ class Game:
         if self.car.wep.current_target is None:
             for enemy in self.enemies:
                 # check if the mouse is within a radius of the enemy
-                if abs(pymunk.Vec2d(x, y) - enemy.pos) < 100:
+                if abs(vec - enemy.screen_pos) < 100:
                     if self.car.wep.targeting_status == 0:
                         self.car.wep.current_target = enemy
         else:
-            if abs(pymunk.Vec2d(x, y) - self.car.wep.current_target.pos) < 150:
+            if abs(vec - self.car.wep.current_target.screen_pos) < 150:
                 # the target has been followed by the mouse for long enough, so set it to the current target
                 #   and reset the timer on targeting status
                 if self.car.wep.targeting_status == OFF:
@@ -423,9 +427,9 @@ class Game:
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_w]:
-            self.car.accelerate(10 ** 6)
+            self.car.accelerate(10 ** 6.25)
         if keys[pygame.K_s]:
-            self.car.accelerate(-10 ** 6)
+            self.car.accelerate(-10 ** 6.25)
 
         th = 0
         if keys[pygame.K_d]:
@@ -443,7 +447,7 @@ class Game:
 
         # if the cars current weapon is a rocket launcher, start tracking
         if isinstance(self.car.wep, RocketLauncher):
-            self.rl_track(x, y)
+            self.rl_track(pymunk.Vec2d(x, y))
 
         m_buttons = pygame.mouse.get_pressed()
         if m_buttons[0]:  # pressed down left mouse button

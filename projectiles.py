@@ -135,6 +135,7 @@ class Rocket(Projectile):
         self.tracking = tracking
         self.explosion_radius = explosion_radius
         self.explosion_force = explosion_force
+        self.body.position = pos
 
     def track(self) -> None:
         """
@@ -218,6 +219,14 @@ class Laser(Projectile):
                         self.sprite.rect.bottomleft - self.pos]
         else:
             vertices = poly.exterior.coords
+
+    def update(self) -> None:
+        """
+        Updates the entity every tick
+        :return: None
+        """
+
+        self.update_sprite()
 
     def update_sprite(self) -> None:
         """

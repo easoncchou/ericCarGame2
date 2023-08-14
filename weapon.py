@@ -81,15 +81,18 @@ class MachineGun(Weapon):
     A machine gun that shoots bullets
     """
 
+    # TODO: Add spread to the bullets
+
     def shoot(self) -> Union[Bullet, None]:
         """
         Shoots a bullet in the guns current direction
         :return:
         """
-        if self.curr_atk_cd <= 0:
+        if self.curr_atk_cd <= 0 < self.ammo:
             self.curr_atk_cd = self.atk_cd
+            self.ammo -= 1
 
-            bullet_image = pygame.surface.Surface((2, 80))
+            bullet_image = pygame.surface.Surface((3, 80))
             bullet_image.fill(BULLET_ORANGE)
 
             return Bullet(self.damage,
@@ -122,8 +125,9 @@ class RocketLauncher(Weapon):
 
         :return: Projectile
         """
-        if self.curr_atk_cd <= 0:
+        if self.curr_atk_cd <= 0 < self.ammo:
             self.curr_atk_cd = self.atk_cd
+            self.ammo -= 1
 
             rocket_image = pygame.image.load("assets/rocket1.png")
             rocket_image = pygame.transform.scale(rocket_image, [65, 65])
@@ -171,15 +175,20 @@ class LaserCannon(Weapon):
         :return: Projectile
         """
 
+        if self.curr_atk_cd <= 0 < self.ammo:
+            self.curr_atk_cd = self.atk_cd
+            self.ammo -= 0.2
+
         block_image = pygame.image.load("assets/laser_beam_block.png")
         block_image = pygame.transform.scale(block_image, [20, 20])
 
         contact_image = pygame.image.load('assets/laser_contact1.png')
         contact_image = pygame.transform.scale(contact_image, [50, 50])
 
+        # TODO: make the laser stop shooting when out of ammo
         if self.laser is None:
             self.laser = Laser(self.damage, self.pos + (pymunk.Vec2d(0, self.barrel_len / 2 + self.rot_off.y)).rotated(-self.a_pos),
-                               self.a_pos, 200, block_image)
+                               self.a_pos, 300, block_image)
             self.laser_contact = LaserContact(Sprite(pymunk.Vec2d(0, 0), contact_image), pymunk.Vec2d(0, 0))
             return self.laser
         else:
