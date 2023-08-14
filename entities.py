@@ -188,10 +188,11 @@ class Explosion(GenericEntity):
         self.lifespan = TICKRATE / 5    # 0.2 second
 
     def update_sprite(self) -> None:
-        pass
+        self.sprite.rect = self.sprite.image.get_rect(center=self.screen_pos)
 
     def update(self) -> None:
         self.lifespan -= 1
+        self.update_sprite()
 
 
 class LaserContact(GenericEntity):

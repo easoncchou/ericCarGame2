@@ -52,7 +52,7 @@ def run_game_loop():
                        cannon_image)
 
     # add wep to car and car to game
-    car.set_weapon(wep1)
+    car.set_weapon(wep2)
     game.add_car(car, 0)
 
     # add target
