@@ -1,9 +1,13 @@
 import pygame.math
 import pygame
 import pymunk
+import math
+import shapely
 
+from car_2 import Car2
 from constants import *
 from sprite import Sprite
+
 
 class GenericEntity:
     """
@@ -120,7 +124,8 @@ class HealthBar(GenericEntity):
 
         image = pygame.Surface([self.w, self.h])
         image.fill(RED)
-        new_pos = pymunk.Vec2d(self.health_entity.pos[0], self.health_entity.pos[1] - self.health_entity.sprite.rect.h / 1.4)
+        new_pos = pymunk.Vec2d(self.health_entity.pos[0],
+                               self.health_entity.pos[1] - self.health_entity.sprite.rect.h / 1.4)
         GenericEntity.__init__(self, Sprite(new_pos, image), new_pos)
 
     def update_sprite(self) -> None:
@@ -143,7 +148,8 @@ class HealthBar(GenericEntity):
         length = percentage_health * self.w
 
         self.sprite.image.fill(RED)
-        self.pos = pymunk.Vec2d(self.health_entity.pos[0], self.health_entity.pos[1] - self.health_entity.sprite.rect.h / 1.4)
+        self.pos = pymunk.Vec2d(self.health_entity.pos[0],
+                                self.health_entity.pos[1] - self.health_entity.sprite.rect.h / 1.4)
         self.update_sprite()
 
         pygame.draw.rect(self.sprite.image, GREEN, [0, 0, length, self.h])
@@ -185,7 +191,7 @@ class Explosion(GenericEntity):
 
         GenericEntity.__init__(self, Sprite(pos, image), pos)
 
-        self.lifespan = TICKRATE / 5    # 0.2 second
+        self.lifespan = TICKRATE / 5  # 0.2 second
 
     def update_sprite(self) -> None:
         self.sprite.rect = self.sprite.image.get_rect(center=self.screen_pos)
@@ -218,10 +224,59 @@ class LaserContact(GenericEntity):
         self.sprite.rect = self.sprite.image.get_rect(center=self.screen_pos)
 
 
+class AmmoBox(GenericEntity):
+    """
+    A box that can be collided with by a car to receive ammo
+    """
+    size: int
+    ammo: int
 
+    def __init__(self, size: int, ammo: int, sprite: Sprite, pos=pymunk.Vec2d(0, 0), a_pos=0, poly=None):
+        """
+        Initializer
+        """
+        self.size = size
+        self.ammo = ammo
+        GenericEntity.__init__(self, sprite, pos, a_pos)
 
+        if poly is None:
+            self.vertices = [self.sprite.rect.topleft - self.pos,
+                             self.sprite.rect.topright - self.pos,
+                             self.sprite.rect.bottomright - self.pos,
+                             self.sprite.rect.bottomleft - self.pos]
+        else:
+            self.vertices = poly.exterior.coords
 
+    def update(self) -> None:
+        """
+        So useless bro
 
+        :return: None
+        """
+        self.update_sprite()
 
+    def update_sprite(self) -> None:
+        """
+        Passively rotate the sprite
 
+        :return:
+        """
+        self.sprite.rect = self.sprite.image.get_rect(center=self.screen_pos)
+        self.a_pos += 0.1
+        self.sprite.image = pygame.transform.rotate(self.sprite.original_image, ((180 / math.pi) * self.a_pos))
+
+    def check_collision(self, car: Car2) -> None:
+        """
+        Check if a car has collided with the box and if so, give the car ammo and delete the box
+
+        :param car:
+        :return: None
+        """
+
+        # define the hitbox for the AmmoBox
+        hitbox = shapely.LineString(
+            [self.vertices[0] - self.pos, self.vertices[1] - self.pos, self.vertices[2] - self.pos,
+             self.vertices[3] - self.pos, self.vertices[0] - self.pos])
+
+        car = shapely.LineString()
 

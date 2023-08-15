@@ -52,11 +52,9 @@ class Weapon(GenericEntity):
         :return: None
         """
 
-        center_screen = pymunk.Vec2d(MAP_WIDTH / 2, MAP_HEIGHT / 2)
         self.sprite.image = pygame.transform.rotate(self.sprite.original_image, ((180 / math.pi) * self.a_pos))
         offset_rotated = self.rot_off.rotated(-self.a_pos)
         self.sprite.rect = self.sprite.image.get_rect(center=self.screen_pos + offset_rotated)
-        # self.sprite.rect = self.sprite.image.get_rect(center=center_screen + offset_rotated)
 
     def update(self) -> None:
         """
