@@ -22,6 +22,6 @@ async def read_message(reader) -> bytes:
             msg_data = await reader.read(int(buf) + BUFFER_SIZE)
 
         return msg_data
-    except ValueError:
+    except ValueError as e:
         await reader.readuntil(separator=b'\n')
-        raise Exception('Partial message')
+        raise Exception(f'Partial message: {e}')

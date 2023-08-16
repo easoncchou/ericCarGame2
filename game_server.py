@@ -1,5 +1,7 @@
 import asyncio
 import multiprocessing
+import queue
+
 import pymunk
 import json
 
@@ -15,10 +17,14 @@ from weapon import MachineGun, RocketLauncher, LaserCannon
 
 class ClientContext:
     clients: dict
+    gs_conn: multiprocessing.Queue
+    cp_conn: multiprocessing.Queue
 
-    def __init__(self, gs_conn, cp_conn):
-        self.gs_conn = gs_conn
-        self.cp_conn = cp_conn
+    def __init__(self, gs_send, gs_recv, cp_send, cp_recv):
+        self.gs_send = gs_send
+        self.gs_recv = gs_recv
+        self.cp_send = cp_send
+        self.cp_recv = cp_recv
         self.clients = {}
 
     def add_client(self, _id, client_writer):
@@ -30,6 +36,7 @@ class ClientContext:
     async def handle_client(self, client_reader, client_writer):
         _id = len(self.clients)
         self.add_client(_id, client_writer)
+        print(f'Opening connection {_id}')
 
         # send a start-up message
         try:
@@ -38,12 +45,9 @@ class ClientContext:
             out_msg = {'init': new_car_info,
                        'add_cars': {}}
 
-            self.gs_conn.send({'type': 'get_cars'})
+            self.gs_send.put({'type': 'get_cars'})
 
-            while not self.gs_conn.poll():
-                pass
-
-            out_msg['add_cars'] = json.loads(self.gs_conn.recv().decode())
+            out_msg['add_cars'] = json.loads(self.gs_recv.get(block=True).decode())
 
             await net.write_message(client_writer,
                                     json.dumps(out_msg).encode())
@@ -62,7 +66,7 @@ class ClientContext:
             print(f"Error with client {_id}: {e}")
 
         # create the car
-        self.gs_conn.send({'type': 'add_car', 'data': _id})
+        self.gs_send.put({'type': 'add_car', 'data': _id})
 
         event = asyncio.Event()
 
@@ -73,7 +77,13 @@ class ClientContext:
 
                     message = json.loads(data.decode())
 
-                    self.cp_conn.send(json.dumps(message).encode())
+                    try:
+                        while True:
+                            self.cp_send.get_nowait()
+                    except queue.Empty as e:
+                        pass
+                    finally:
+                        self.cp_send.put(json.dumps(message).encode())
                 except ConnectionError as e:
                     print(f'{type(e).__name__} while reading: {e}')
                     event.set()
@@ -83,10 +93,8 @@ class ClientContext:
         async def send_data(event: asyncio.Event):
             while not event.is_set():
                 await asyncio.sleep(0)
-                if self.cp_conn.poll():
-                    msg = self.cp_conn.recv()
-                    while self.cp_conn.poll():
-                        msg = self.cp_conn.recv()
+                if not self.cp_recv.empty():
+                    msg = self.cp_recv.get()
 
                     # Broadcast the updated game_state to all connected clients
                     for __id, client in self.clients.items():
@@ -119,7 +127,10 @@ class ClientContext:
             print(f"Connection from {_id} closed")
 
 
-def run_server_game_loop(gs_conn, cp_conn):
+def run_server_game_loop(gs_send: multiprocessing.Queue,
+                         gs_recv: multiprocessing.Queue,
+                         cp_send: multiprocessing.Queue,
+                         cp_recv: multiprocessing.Queue):
     import pygame
 
     pygame.init()
@@ -129,10 +140,9 @@ def run_server_game_loop(gs_conn, cp_conn):
     clock = pygame.time.Clock()
 
     game = Game()
-
     while True:
-        if gs_conn.poll():
-            msg = gs_conn.recv()
+        if not gs_recv.empty():
+            msg = gs_recv.get()
 
             # todo make adding car more general
             if msg.get('type') == 'add_car':
@@ -170,10 +180,10 @@ def run_server_game_loop(gs_conn, cp_conn):
 
                     out_msg[_id] = car_info
 
-                gs_conn.send(json.dumps(out_msg).encode())
+                gs_send.put(json.dumps(out_msg).encode())
 
-        while cp_conn.poll():
-            data = cp_conn.recv()
+        while not cp_recv.empty():
+            data = cp_recv.get()
 
             car_info = json.loads(data.decode())
             car = game.cars[car_info['id']]
@@ -195,7 +205,13 @@ def run_server_game_loop(gs_conn, cp_conn):
 
             out_msg['update_cars'][_id] = car_info
 
-        cp_conn.send(json.dumps(out_msg).encode())
+        try:
+            while True:
+                cp_send.get_nowait()
+        except queue.Empty as e:
+            pass
+        finally:
+            cp_send.put(json.dumps(out_msg).encode())
 
         game.update()
         clock.tick(TICKRATE)
@@ -214,15 +230,21 @@ async def run_server(ctx):
 
 
 if __name__ == "__main__":
-    gs_conn1, gs_conn2 = multiprocessing.Pipe()
-    cp_conn1, cp_conn2 = multiprocessing.Pipe()
+    # gs_serv: serv.put() --> game.get()
+    # gs_game: game.put() --> serv.get()
+    # ...
+    gs_serv, gs_game = multiprocessing.Queue(), multiprocessing.Queue()
+    cp_serv, cp_game = multiprocessing.Queue(), multiprocessing.Queue()
 
     # Start the game loop and input handling processes
     game_process = multiprocessing.Process(target=run_server_game_loop,
-                                           args=(gs_conn1, cp_conn1))
+                                           args=(gs_game,
+                                                 gs_serv,
+                                                 cp_game,
+                                                 cp_serv))
     game_process.start()
 
-    ctx = ClientContext(gs_conn2, cp_conn2)
+    ctx = ClientContext(gs_serv, gs_game, cp_serv, cp_game)
     asyncio.run(run_server(ctx))
 
     # Wait for the game process to finish
