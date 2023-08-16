@@ -57,7 +57,6 @@ async def handle_server(conn):
                 except Exception as e:
                     print(f'{type(e).__name__} while writing: {e}')
 
-
     receive_task = asyncio.create_task(receive_data(event))
     send_task = asyncio.create_task(send_data(event))
 
@@ -68,8 +67,13 @@ async def handle_server(conn):
     except Exception as e:
         print(f'Error: {e}')
     finally:
-        writer.close()
-        await writer.wait_closed()
+        try:
+            writer.close()
+            await writer.wait_closed()
+        except Exception as e:
+            print(f'{type(e).__name__} while closing: {e}')
+
+        print(f"Connection to server closed")
 
 
 def run_client_loop(conn):
@@ -139,9 +143,8 @@ def run_client_loop(conn):
                 done = True
 
         if conn.poll():
-            msg: dict = json.loads(conn.recv().decode())
+            msg = json.loads(conn.recv().decode())
             if msg.get('add_cars') is not None:
-                print(msg)
                 for _id, init_pos in msg.get('add_cars').items():
                     init_pos = pymunk.Vec2d(init_pos[0], init_pos[1])
                     # load the image for the car

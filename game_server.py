@@ -34,7 +34,7 @@ class ClientContext:
         self.clients.pop(_id)
 
     async def handle_client(self, client_reader, client_writer):
-        _id = len(self.clients)
+        _id = max([-1] + list(self.clients.keys())) + 1
         self.add_client(_id, client_writer)
         print(f'Opening connection {_id}')
 
@@ -55,7 +55,7 @@ class ClientContext:
             for __id, client in self.clients.items():
                 if _id != __id:
                     s = json.dumps({'add_cars': {_id: init_pos}})
-                    print(f'sent {s} to {_id}')
+                    print(__id, s)
                     await net.write_message(client, json.dumps(
                         {'add_cars': {_id: init_pos}}).encode())
 
