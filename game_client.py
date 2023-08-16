@@ -148,33 +148,32 @@ def run_client_loop(conn):
                 for _id in msg.get('remove_cars'):
                     game.remove_car(_id)
 
-            if msg.get('add_cars') is not None:
-                for _id, init_pos in msg.get('add_cars').items():
-                    init_pos = pymunk.Vec2d(init_pos[0], init_pos[1])
-                    # load the image for the car
-                    car_image = pygame.image.load('assets/car1.png')
-                    # Resize
-                    car_image = pygame.transform.scale(
-                        car_image,
-                        (45, 80),
-                    )
-
-                    # define the pygame sprite for the machine gun
-                    gun_image = pygame.image.load('assets/machine_gun1.png')
-                    gun_image = pygame.transform.scale(gun_image, [40, 70])
-
-                    # create car and wep
-                    car = Car2(game.space, 1000, init_pos, 250, car_image)
-                    wep1 = MachineGun(init_pos, 20, 10, 500, pymunk.Vec2d(-4, 15), gun_image)
-
-                    # add wep to car and car to game
-                    car.set_weapon(wep1)
-
-                    game.add_car(car, int(_id))
-
             if msg.get('update_cars') is not None:
                 for _id, car_info in msg.get('update_cars').items():
-                    if int(_id) != game.id and game.cars.get(int(_id)) is not None:
+                    if int(_id) != game.id:
+                        if game.cars.get(int(_id)) is None:
+                            init_pos = pymunk.Vec2d(init_pos[0], init_pos[1])
+                            # load the image for the car
+                            car_image = pygame.image.load('assets/car1.png')
+                            # Resize
+                            car_image = pygame.transform.scale(
+                                car_image,
+                                (45, 80),
+                            )
+
+                            # define the pygame sprite for the machine gun
+                            gun_image = pygame.image.load('assets/machine_gun1.png')
+                            gun_image = pygame.transform.scale(gun_image, [40, 70])
+
+                            # create car and wep
+                            car = Car2(game.space, 1000, init_pos, 250, car_image)
+                            wep1 = MachineGun(init_pos, 20, 10, 500, pymunk.Vec2d(-4, 15), gun_image)
+
+                            # add wep to car and car to game
+                            car.set_weapon(wep1)
+
+                            game.add_car(car, int(_id))
+
                         car = game.cars[int(_id)]
                         car.body.position = pymunk.Vec2d(car_info['pos'][0], car_info['pos'][1])
                         car.body.angle = car_info['a_pos']

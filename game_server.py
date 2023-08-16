@@ -52,13 +52,6 @@ class ClientContext:
             await net.write_message(client_writer,
                                     json.dumps(out_msg).encode())
 
-            for __id, client in self.clients.items():
-                if _id != __id:
-                    s = json.dumps({'add_cars': {_id: init_pos}})
-                    print(__id, s)
-                    await net.write_message(client, json.dumps(
-                        {'add_cars': {_id: init_pos}}).encode())
-
             print(f"Connection from {_id} opened")
         except Exception as e:
             # Remove the client if there's an error sending data
