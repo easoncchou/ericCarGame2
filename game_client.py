@@ -144,11 +144,15 @@ def run_client_loop(conn):
 
         if conn.poll():
             msg = json.loads(conn.recv().decode())
-            if msg.get('remove_cars') is not None:
-                for _id in msg.get('remove_cars'):
-                    game.remove_car(_id)
 
             if msg.get('update_cars') is not None:
+                # remove cars
+                _id_list = msg.get('update_cars').keys()
+                for _id in game.cars.keys():
+                    if _id not in _id_list:
+                        game.cars.pop(_id)
+
+                # update/add cars
                 for _id, car_info in msg.get('update_cars').items():
                     if int(_id) != game.id:
                         if game.cars.get(int(_id)) is None:
