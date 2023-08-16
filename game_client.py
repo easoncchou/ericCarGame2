@@ -35,17 +35,28 @@ async def handle_server(conn):
             try:
                 data = await net.read_message(reader)
 
-                print(f'Received response from server: {data.decode()}')
+                # print(f'Received response from server: {data.decode()}')
                 conn.send(data)
+            except ConnectionError as e:
+                print(f'{type(e).__name__} while reading: {e}')
+                event.set()
             except Exception as e:
-                print(f'{type(e).__name__} while receiving: {e}')
+                print(f'{type(e).__name__} while reading: {e}')
 
     async def send_data(event: asyncio.Event):
         while not event.is_set():
             await asyncio.sleep(0)
             if conn.poll():
                 msg = conn.recv()
-                await net.write_message(writer, msg)
+
+                try:
+                    await net.write_message(writer, msg)
+                except ConnectionError as e:
+                    print(f'{type(e).__name__} while writing: {e}')
+                    event.set()
+                except Exception as e:
+                    print(f'{type(e).__name__} while writing: {e}')
+
 
     receive_task = asyncio.create_task(receive_data(event))
     send_task = asyncio.create_task(send_data(event))
@@ -130,6 +141,7 @@ def run_client_loop(conn):
         if conn.poll():
             msg: dict = json.loads(conn.recv().decode())
             if msg.get('add_cars') is not None:
+                print(msg)
                 for _id, init_pos in msg.get('add_cars').items():
                     init_pos = pymunk.Vec2d(init_pos[0], init_pos[1])
                     # load the image for the car
@@ -168,7 +180,9 @@ def run_client_loop(conn):
         game.update()
 
         # wrap our car information
-        car_info = {'pos': game.car.body.position, 'a_pos': game.car.body.angle,
+        car_info = {'id': game.id,
+                    'pos': game.car.body.position,
+                    'a_pos': game.car.body.angle,
                     'vel': game.car.body.velocity,
                     'steering_angle': game.car.steering_angle,
                     'wep_angle': game.car.wep.a_pos}

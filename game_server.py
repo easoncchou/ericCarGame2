@@ -50,6 +50,8 @@ class ClientContext:
 
             for __id, client in self.clients.items():
                 if _id != __id:
+                    s = json.dumps({'add_cars': {_id: init_pos}})
+                    print(f'sent {s} to {_id}')
                     await net.write_message(client, json.dumps(
                         {'add_cars': {_id: init_pos}}).encode())
 
@@ -70,15 +72,13 @@ class ClientContext:
                     data = await net.read_message(client_reader)
 
                     message = json.loads(data.decode())
-                    print(f"Received from client: {message}")
-                    message['id'] = _id
 
                     self.cp_conn.send(json.dumps(message).encode())
                 except ConnectionError as e:
-                    print(f'{type(e).__name__} while receiving: {e}')
+                    print(f'{type(e).__name__} while reading: {e}')
                     event.set()
                 except Exception as e:
-                    print(f'{type(e).__name__} while receiving: {e}')
+                    print(f'{type(e).__name__} while reading: {e}')
 
         async def send_data(event: asyncio.Event):
             while not event.is_set():
@@ -90,7 +90,13 @@ class ClientContext:
 
                     # Broadcast the updated game_state to all connected clients
                     for __id, client in self.clients.items():
-                        await net.write_message(client, msg)
+                        try:
+                            await net.write_message(client, msg)
+                        except ConnectionError as e:
+                            print(f'{type(e).__name__} while writing: {e}')
+                            event.set()
+                        except Exception as e:
+                            print(f'{type(e).__name__} while writing: {e}')
 
         receive_task = asyncio.create_task(receive_data(event))
         send_task = asyncio.create_task(send_data(event))

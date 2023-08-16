@@ -12,18 +12,15 @@ async def read_message(reader) -> bytes:
     buf = await reader.read(BUFFER_SIZE)
 
     if not buf:
-        raise asyncio.IncompleteReadError(buf, BUFFER_SIZE)
+        raise ConnectionError('Connection closed')
 
     try:
         int(buf)
-    except ValueError as e:
+    except ValueError:
         await reader.readuntil(separator=b'\n')
         raise Exception('Partial message')
 
     msg_data = await reader.read(int(buf) + BUFFER_SIZE)
-
-    if not msg_data:
-        raise asyncio.IncompleteReadError(msg_data, int(buf))
 
     while len(msg_data) != int(buf):
         buf = msg_data[int(buf):]
