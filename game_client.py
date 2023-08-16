@@ -148,7 +148,7 @@ def run_client_loop(conn):
             if msg.get('update_cars') is not None:
                 # remove cars
                 _id_list = msg.get('update_cars').keys()
-                for _id in game.cars.keys():
+                for _id in list(game.cars.keys()):
                     if _id not in _id_list:
                         game.cars.pop(_id)
 
