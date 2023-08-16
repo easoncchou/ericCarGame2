@@ -118,6 +118,14 @@ class ClientContext:
         finally:
             self.remove_client(_id)
 
+            self.gs_send.put({'type': 'remove_car', 'id': _id})
+
+            for __id, client in self.clients.items():
+                if _id != __id:
+                    await net.write_message(client,
+                                            json.dumps({'remove_cars': [_id]}).
+                                            encode())
+
             try:
                 client_writer.close()
                 await client_writer.wait_closed()
@@ -169,6 +177,8 @@ def run_server_game_loop(gs_send: multiprocessing.Queue,
                 car.set_weapon(wep1)
 
                 game.add_car(car, msg.get('data'))
+            elif msg.get('type') == 'remove_car':
+                game.remove_car(msg['id'])
             elif msg.get('type') == 'get_cars':
                 out_msg = {}
 

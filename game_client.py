@@ -144,6 +144,10 @@ def run_client_loop(conn):
 
         if conn.poll():
             msg = json.loads(conn.recv().decode())
+            if msg.get('remove_cars') is not None:
+                for _id in msg.get('remove_cars'):
+                    game.remove_car(_id)
+
             if msg.get('add_cars') is not None:
                 for _id, init_pos in msg.get('add_cars').items():
                     init_pos = pymunk.Vec2d(init_pos[0], init_pos[1])

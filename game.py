@@ -148,6 +148,24 @@ class Game:
         self.add_entity(car.wep)
         self.add_entity(car.hp_bar)
 
+    def remove_car(self, _id) -> None:
+        """
+        Removes car with _id from self.cars
+
+        :param _id:
+        :return:
+        """
+
+        car = self.cars[_id]
+        self.cars.pop(_id)
+
+        if self.id == _id:
+            self.car = None
+
+        self.delete_entity(car)
+        self.delete_entity(car.wep)
+        self.delete_entity(car.hp_bar)
+
     def add_entity(self, ent: GenericEntity) -> None:
         """
         Add an Entity
