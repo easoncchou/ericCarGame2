@@ -4,7 +4,6 @@ import pymunk
 import math
 import shapely
 
-from car_2 import Car2
 from constants import *
 from sprite import Sprite
 
@@ -264,19 +263,4 @@ class AmmoBox(GenericEntity):
         self.sprite.rect = self.sprite.image.get_rect(center=self.screen_pos)
         self.a_pos += 0.1
         self.sprite.image = pygame.transform.rotate(self.sprite.original_image, ((180 / math.pi) * self.a_pos))
-
-    def check_collision(self, car: Car2) -> None:
-        """
-        Check if a car has collided with the box and if so, give the car ammo and delete the box
-
-        :param car:
-        :return: None
-        """
-
-        # define the hitbox for the AmmoBox
-        hitbox = shapely.LineString(
-            [self.vertices[0] - self.pos, self.vertices[1] - self.pos, self.vertices[2] - self.pos,
-             self.vertices[3] - self.pos, self.vertices[0] - self.pos])
-
-        car = shapely.LineString()
 
