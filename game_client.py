@@ -1,6 +1,8 @@
 import asyncio
 # import uvloop
 import multiprocessing
+import queue
+
 import pymunk
 import json
 
@@ -14,19 +16,22 @@ from enemy import Target, MovingTarget
 from weapon import MachineGun, RocketLauncher, LaserCannon
 
 
-async def handle_server(conn):
+async def handle_server(send: multiprocessing.Queue, recv: multiprocessing.Queue):
     reader, writer = await asyncio.open_connection(HOST, PORT)
 
     # on start-up, server will send {'id': x, 'init_pos': [x, y]}
     try:
         data = await net.read_message(reader)
         print(f'Received response from server: {data.decode()}')
-        conn.send(data)
+        send.put(data)
     except Exception as e:
         print(f'{type(e).__name__} while initializing: {e}')
         writer.close()
         await writer.wait_closed()
         return
+
+    # wait for initialization
+    recv.get(block=True)
 
     event = asyncio.Event()
 
@@ -36,7 +41,13 @@ async def handle_server(conn):
                 data = await net.read_message(reader)
 
                 # print(f'Received response from server: {data.decode()}')
-                conn.send(data)
+                try:
+                    while True:
+                        send.get_nowait()
+                except queue.Empty:
+                    pass
+                finally:
+                    send.put(data)
             except ConnectionError as e:
                 print(f'{type(e).__name__} while reading: {e}')
                 event.set()
@@ -46,8 +57,8 @@ async def handle_server(conn):
     async def send_data(event: asyncio.Event):
         while not event.is_set():
             await asyncio.sleep(0)
-            if conn.poll():
-                msg = conn.recv()
+            if not recv.empty():
+                msg = recv.get()
 
                 try:
                     await net.write_message(writer, msg)
@@ -76,7 +87,7 @@ async def handle_server(conn):
         print(f"Connection to server closed")
 
 
-def run_client_loop(conn):
+def run_client_loop(send: multiprocessing.Queue, recv: multiprocessing.Queue):
     import pygame
 
     pygame.init()
@@ -87,12 +98,8 @@ def run_client_loop(conn):
     all_sprites_group = pygame.sprite.Group()
     clock = pygame.time.Clock()
 
-    # wait for the server connection to establish
-    while not conn.poll():
-        pass
-
     # on start-up, server will send {'init': {'id': x, 'init_pos': [x, y]}, add_cars: { ... }}
-    msg = json.loads(conn.recv().decode())
+    msg = json.loads(recv.get(block=True).decode())
     game = Game(screen, all_sprites_group, msg['init']['id'])
 
     # todo make adding car more general
@@ -136,14 +143,17 @@ def run_client_loop(conn):
 
             game.add_car(car, int(_id))
 
+    # notify the server handler that the game loop is ready
+    send.put(0)
+
     while not done:
         # handle events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 done = True
 
-        if conn.poll():
-            msg = json.loads(conn.recv().decode())
+        if not recv.empty():
+            msg = json.loads(recv.get().decode())
 
             if msg.get('update_cars') is not None:
                 # remove cars
@@ -197,25 +207,33 @@ def run_client_loop(conn):
                     'steering_angle': game.car.steering_angle,
                     'wep_angle': game.car.wep.a_pos}
 
-        conn.send(json.dumps(car_info).encode())
+        try:
+            while True:
+                send.get_nowait()
+        except queue.Empty:
+            pass
+        finally:
+            send.put(json.dumps(car_info).encode())
 
         game.render()
         clock.tick(60)
 
 
 if __name__ == '__main__':
-    # uvloop.install()
+    # gq: game --> serv
+    # sq: serv --> game
+    gq, sq = multiprocessing.Queue(), multiprocessing.Queue()
 
     game_conn, h_input_conn = multiprocessing.Pipe()
 
     # Start the game loop and input handling processes
-    game_process = multiprocessing.Process(target=run_client_loop, args=(game_conn,))
+    game_process = multiprocessing.Process(target=run_client_loop, args=(sq, gq))
     game_process.start()
 
     # Create an asyncio event loop and run the handle_input coroutine
     asyncio_loop = asyncio.new_event_loop()
     asyncio.set_event_loop(asyncio_loop)
-    asyncio_loop.run_until_complete(handle_server(h_input_conn))
+    asyncio_loop.run_until_complete(handle_server(gq, sq))
 
     # Wait for the game process to finish
     game_process.terminate()

@@ -204,7 +204,7 @@ def run_server_game_loop(gs_send: multiprocessing.Queue,
         try:
             while True:
                 cp_send.get_nowait()
-        except queue.Empty as e:
+        except queue.Empty:
             pass
         finally:
             cp_send.put(json.dumps(out_msg).encode())
