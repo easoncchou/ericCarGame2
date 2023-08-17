@@ -53,7 +53,7 @@ class GenericEntity:
         :return: None
         """
 
-        center_screen = pymunk.Vec2d(MAP_WIDTH / 2, MAP_HEIGHT / 2)
+        center_screen = pymunk.Vec2d(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
         self.screen_pos = self.pos - self.car_pos + center_screen
 
 
@@ -230,13 +230,16 @@ class AmmoBox(GenericEntity):
     size: int
     ammo: int
 
-    def __init__(self, size: int, ammo: int, sprite: Sprite, pos=pymunk.Vec2d(0, 0), a_pos=0, poly=None):
+    def __init__(self, size: int, ammo: int, pos=pymunk.Vec2d(MAP_WIDTH / 2, MAP_HEIGHT / 2), a_pos=0, poly=None):
         """
         Initializer
         """
         self.size = size
         self.ammo = ammo
-        GenericEntity.__init__(self, sprite, pos, a_pos)
+        image = pygame.Surface((size, size))
+        image.fill(BULLET_ORANGE)
+
+        GenericEntity.__init__(self, Sprite(pos, image), pos, a_pos)
 
         if poly is None:
             self.vertices = [self.sprite.rect.topleft - self.pos,
@@ -245,6 +248,12 @@ class AmmoBox(GenericEntity):
                              self.sprite.rect.bottomleft - self.pos]
         else:
             self.vertices = poly.exterior.coords
+
+        self.body = pymunk.Body(0, 0, body_type=pymunk.Body.STATIC)
+        self.body.position = pos
+        self.shape = pymunk.Poly(self.body, self.vertices)
+        self.shape.collision_type = COLLTYPE_AMMO_BOX
+        self.shape.ent = self
 
     def update(self) -> None:
         """
@@ -261,6 +270,6 @@ class AmmoBox(GenericEntity):
         :return:
         """
         self.sprite.rect = self.sprite.image.get_rect(center=self.screen_pos)
-        self.a_pos += 0.1
+        self.a_pos += 0.01
         self.sprite.image = pygame.transform.rotate(self.sprite.original_image, ((180 / math.pi) * self.a_pos))
 

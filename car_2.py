@@ -58,6 +58,8 @@ class Car2(HealthEntity):
         self.body = pymunk.Body(mass, moment)
         self.body.position = pos
         self.shape = pymunk.Poly(self.body, vertices)
+        self.shape.collision_type = COLLTYPE_CAR
+        self.shape.ent = self
 
         self.front_pivot_point = pymunk.Vec2d(0, 30)
         self.back_pivot_point = pymunk.Vec2d(0, -30)
