@@ -11,17 +11,18 @@ class Terrain(GenericEntity):
     """
     Terrain class containing obstacles and barriers
     """
-    def __init__(self, space: pymunk.Space, mass: int, pos: pymunk.Vec2d, image: pygame.image, poly=None) -> None:
+    def __init__(self, space: pymunk.Space, mass: int, pos: pymunk.Vec2d, width: int, height: int, poly=None) -> None:
         """
         Initializer
 
         :param mass: mass of the car
         :param pos: initial position of the car
-        :param image: the image for the sprite of the car
         :param poly: polygon representing the shape of the car, rectangle by default
         """
 
-        GenericEntity.__init__(self, Sprite(pos, image))
+        image = pygame.Surface((width, height))
+
+        GenericEntity.__init__(self, Sprite(pos, image), pos)
         self.space = space
 
         if poly is None:
@@ -32,33 +33,44 @@ class Terrain(GenericEntity):
         else:
             vertices = poly.exterior.coords
 
-        # make moment extra large to simulate proper movement
-        moment = pymunk.moment_for_poly(mass, vertices) * 20
-
-        self.body = pymunk.Body(mass, moment, 2)
+        self.body = pymunk.Body(mass, 0, body_type=pymunk.Body.STATIC)
         self.body.position = pos
         self.shape = pymunk.Poly(self.body, vertices)
+        self.shape.collision_type = COLLTYPE_WALL
 
-    def handle_collision(self) -> None:
+    def update(self) -> None:
         """
-        Handle collision between a piece of terrain and a car or projectile
+        Update the piece of terrain
 
         :return:
         """
+        self.update_sprite()
 
-        raise NotImplementedError
+    def update_sprite(self) -> None:
+        """
+        Update the sprite's location
+
+        :return: None
+        """
+        self.sprite.rect = self.sprite.image.get_rect(center=self.screen_pos)
 
 
 class BoundaryWall(Terrain):
     """
     A subclass of terrain used for the boundaries/edges of the map
     """
+    def __init__(self, space: pymunk.Space, mass: int, pos: pymunk.Vec2d, width: int, height: int, poly=None) -> None:
+        Terrain.__init__(self, space, mass, pos, width, height)
+        self.sprite.image.fill(BLUE)
 
 
 class CoverWall(Terrain):
     """
     A subclass of terrain used for smaller walls inside the map as cover
     """
+    def __init__(self, space: pymunk.Space, mass: int, pos: pymunk.Vec2d, width: int, height: int, poly=None) -> None:
+        Terrain.__init__(self, space, mass, pos, width, height)
+        self.sprite.image.fill(YELLOW)
 
 
 class ObstacleRock(Terrain):
@@ -66,9 +78,4 @@ class ObstacleRock(Terrain):
     A subclass of terrain used for rocks that stop cars but not projectiles
     """
 
-
-class MudPuddle(Terrain):
-    """
-    A subclass of terrain used for patches that slow down cars passing through
-    """
 

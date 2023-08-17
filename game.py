@@ -13,6 +13,7 @@ from car_2 import Car2
 from weapon import MachineGun, RocketLauncher, LaserCannon
 from projectiles import Projectile
 from enemy import Target
+from terrain import *
 
 
 class Game:
@@ -41,40 +42,15 @@ class Game:
 
         self.screen = screen
         self.all_sprites_group = all_sprites_group
-        width, height = MAP_WIDTH * 3, MAP_HEIGHT * 3
+        width, height = MAP_WIDTH, MAP_HEIGHT
 
         self.space = pymunk.Space()
         self.space.damping = 0.7
 
-        # add walls
-        # Create a ground shape (a segment in this case)
-        bottom_wall_shape = pymunk.Segment(self.space.static_body, (0, 0),
-                                           (0, height), 1)
-        bottom_wall_shape.collision_type = COLLTYPE_WALL
-        self.space.add(bottom_wall_shape)
-
-        # Create other walls or boundaries as needed
-        # Example: A left wall
-        left_wall_shape = pymunk.Segment(self.space.static_body, (0, height),
-                                         (width, height), 1)
-        left_wall_shape.collision_type = COLLTYPE_WALL
-        self.space.add(left_wall_shape)
-
-        # Example: A right wall
-        right_wall_shape = pymunk.Segment(self.space.static_body,
-                                          (width, height), (width, 0), 1)
-        right_wall_shape.collision_type = COLLTYPE_WALL
-        self.space.add(right_wall_shape)
-
-        # Example: A ceiling
-        top_wall_shape = pymunk.Segment(self.space.static_body, (width, 0),
-                                        (0, 0), 1)
-        top_wall_shape.collision_type = COLLTYPE_WALL
-        self.space.add(top_wall_shape)
-
         # collision handlers
         def bullet_coll(arbiter, space, data):
-            # neat trick, if we add an attribute to the pymunk.Shape attribute in the enemy and proj initializer, we can get the entities associated easily
+            # neat trick, if we add an attribute to the pymunk.Shape attribute in the
+            # enemy and proj initializer, we can get the entities associated easily
             proj = arbiter.shapes[0].ent
             enemy = arbiter.shapes[1].ent
 
@@ -110,6 +86,19 @@ class Game:
             self.delete_proj(proj)
 
             return True
+
+        def ammo_box_coll(arbiter, space, data):
+            ammo_box = arbiter.shapes[0].ent
+            car = arbiter.shapes[1].ent
+
+            car.wep.ammo += ammo_box.ammo
+            self.delete_ammo_box(ammo_box)
+
+            return False
+
+        ammo_box_handler = self.space.add_collision_handler(COLLTYPE_AMMO_BOX,
+                                                            COLLTYPE_CAR)
+        ammo_box_handler.pre_solve = ammo_box_coll
 
         bullet_wall_handler = self.space.add_collision_handler(
             COLLTYPE_BULLETPROJ, COLLTYPE_WALL)
@@ -239,6 +228,39 @@ class Game:
         self.projs.remove(proj)
         self.space.remove(proj.body, proj.shape)
 
+    def add_terrain(self, terr: Terrain) -> None:
+        """
+        Add a piece of terrain
+
+        :param terr: Terrain to delete
+        :return:
+        """
+
+        self.add_entity(terr)
+        self.space.add(terr.body, terr.shape)
+
+    def add_ammo_box(self, box: AmmoBox) -> None:
+        """
+        Add a box of ammo
+
+        :param box: Box to add
+        :return:
+        """
+
+        self.add_entity(box)
+        self.space.add(box.body, box.shape)
+
+    def delete_ammo_box(self, box: AmmoBox) -> None:
+        """
+        Delete a box of ammo
+
+        :param box: Box to delete
+        :return:
+        """
+
+        self.delete_entity(box)
+        self.space.remove(box.body, box.shape)
+
     def render(self) -> None:
         """
         Render graphics
@@ -282,25 +304,25 @@ class Game:
         font = pygame.font.SysFont(None, 48)
         img = font.render(str(round(abs(self.car.body.velocity), 1)), True,
                           BLUE)
-        self.screen.blit(img, (MAP_WIDTH - 120, MAP_HEIGHT - 80))
+        self.screen.blit(img, (SCREEN_WIDTH - 120, SCREEN_HEIGHT - 80))
 
         body_a = (-self.car.body.rotation_vector.angle) % (2 * math.pi)
         body_v = (math.pi / 2 - self.car.body.velocity.angle) % (2 * math.pi)
 
         if abs(body_a - body_v) < math.pi / 2:
             img = font.render('front', True, BLUE)
-            self.screen.blit(img, (MAP_WIDTH - 120, MAP_HEIGHT - 160))
+            self.screen.blit(img, (SCREEN_WIDTH - 120, SCREEN_HEIGHT - 160))
         else:
             img = font.render('back', True, BLUE)
-            self.screen.blit(img, (MAP_WIDTH - 120, MAP_HEIGHT - 160))
+            self.screen.blit(img, (SCREEN_WIDTH - 120, SCREEN_HEIGHT - 160))
 
         img = font.render(str(round(self.car.body.rotation_vector.angle, 4)),
                           True, BLUE)
-        self.screen.blit(img, (MAP_WIDTH - 120, MAP_HEIGHT - 200))
+        self.screen.blit(img, (SCREEN_WIDTH - 120, SCREEN_HEIGHT - 200))
 
         # ammo counter
         img = font.render(str(round(self.car.wep.ammo)), True, YELLOW)
-        self.screen.blit(img, (MAP_WIDTH - 120, MAP_HEIGHT - 260))
+        self.screen.blit(img, (SCREEN_WIDTH - 120, SCREEN_HEIGHT - 260))
 
         # update display
         pygame.display.flip()
@@ -312,6 +334,7 @@ class Game:
         """
 
         if self.car.wep.current_target is None:
+            # self.car.wep.targeting_status = 0
             for enemy in self.enemies:
                 # check if the mouse is within a radius of the enemy
                 if abs(vec - enemy.screen_pos) < 100:
@@ -430,6 +453,7 @@ class Game:
         if self.reticle is not None and self.reticle.current_target.hp <= 0:
             if self.reticle in self.ents:
                 self.delete_entity(self.reticle)
+                self.car.wep.targeting_status = 0
 
     def handle_input(self) -> None:
         """
@@ -444,9 +468,9 @@ class Game:
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_w]:
-            self.car.accelerate(10 ** 6.25)
+            self.car.accelerate(10 ** 6.22)
         if keys[pygame.K_s]:
-            self.car.accelerate(-10 ** 6.25)
+            self.car.accelerate(-10 ** 6.22)
 
         th = 0
         if keys[pygame.K_d]:
@@ -460,7 +484,7 @@ class Game:
         x, y = pygame.mouse.get_pos()
 
         self.car.wep.a_pos = -(
-                    pymunk.Vec2d(x, y) - self.car.screen_pos).angle + math.pi / 2
+                pymunk.Vec2d(x, y) - self.car.screen_pos).angle + math.pi / 2
 
         # if the cars current weapon is a rocket launcher, start tracking
         if isinstance(self.car.wep, RocketLauncher):
