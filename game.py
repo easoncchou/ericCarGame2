@@ -42,7 +42,6 @@ class Game:
 
         self.screen = screen
         self.all_sprites_group = all_sprites_group
-        width, height = MAP_WIDTH, MAP_HEIGHT
 
         self.space = pymunk.Space()
         self.space.damping = 0.7
