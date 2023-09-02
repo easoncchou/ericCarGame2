@@ -236,8 +236,9 @@ class AmmoBox(GenericEntity):
         """
         self.size = size
         self.ammo = ammo
-        image = pygame.Surface((size, size))
-        image.fill(BULLET_ORANGE)
+        self.cd = 1000
+        image = pygame.image.load("assets/ammo_box.png")
+        image = pygame.transform.scale(image, [100, 100])
 
         GenericEntity.__init__(self, Sprite(pos, image), pos, a_pos)
 

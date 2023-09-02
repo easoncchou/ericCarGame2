@@ -29,6 +29,8 @@ class Game:
     ents: list[GenericEntity]
     enemies: list[HealthEntity]
     projs: list[Projectile]
+    cd: int
+    abox_on_screen: bool
 
     def __init__(self, screen: pygame.display = None,
                  all_sprites_group: pygame.sprite.Group = None,
@@ -45,6 +47,8 @@ class Game:
 
         self.space = pymunk.Space()
         self.space.damping = 0.7
+        self.cd = 1200  # for timing the spawn of ammo boxes
+        self.abox_on_screen = False
 
         # collision handlers
         def bullet_coll(arbiter, space, data):
@@ -248,6 +252,7 @@ class Game:
 
         self.add_entity(box)
         self.space.add(box.body, box.shape)
+        self.abox_on_screen = True
 
     def delete_ammo_box(self, box: AmmoBox) -> None:
         """
@@ -259,6 +264,7 @@ class Game:
 
         self.delete_entity(box)
         self.space.remove(box.body, box.shape)
+        self.abox_on_screen = False
 
     def render(self) -> None:
         """
@@ -416,6 +422,16 @@ class Game:
         # calculate and perform the laser's damage if it hits an enemy
         return contact, closest_enemy
 
+    def spawn_ammo_box(self):
+        if self.cd < 0 and self.abox_on_screen is False:
+            ammo_box_1 = AmmoBox(100, 100)
+            self.add_ammo_box(ammo_box_1)
+            self.cd = 1200
+        elif self.abox_on_screen is True:
+            pass
+        else:
+            self.cd -= 1
+
     def update(self) -> None:
         """
         Update the game every tick
@@ -449,10 +465,14 @@ class Game:
                 if ent.lifespan <= 0:
                     self.delete_entity(ent)
 
+        # delete reticle upon target deletion
         if self.reticle is not None and self.reticle.current_target.hp <= 0:
             if self.reticle in self.ents:
                 self.delete_entity(self.reticle)
                 self.car.wep.targeting_status = 0
+
+        # spawn ammo box conditionaly
+        self.spawn_ammo_box()
 
     def handle_input(self) -> None:
         """
