@@ -90,7 +90,10 @@ class Game:
 
             return True
 
-        def ammo_box_coll(arbiter, space, data):
+        def ammo_box_car_coll(arbiter, space, data):
+            """
+            When a car collides with an ammo box, replenish the car's ammo
+            """
             ammo_box = arbiter.shapes[0].ent
             car = arbiter.shapes[1].ent
 
@@ -99,9 +102,31 @@ class Game:
 
             return False
 
+        def ammo_box_bullet_coll(arbiter, space, data):
+            """
+            When a bullet collides with an ammo box, let the bullet pass through the box
+            """
+            pass
+
+            return False
+
+        def ammo_box_rocket_coll(arbiter, space, data):
+            """
+            When a rocket collides with an ammo box, let the rocket pass through the box
+            """
+            pass
+
+            return False
+
         ammo_box_handler = self.space.add_collision_handler(COLLTYPE_AMMO_BOX,
                                                             COLLTYPE_CAR)
-        ammo_box_handler.pre_solve = ammo_box_coll
+        ammo_box_handler2 = self.space.add_collision_handler(COLLTYPE_AMMO_BOX,
+                                                             COLLTYPE_BULLETPROJ)
+        ammo_box_handler3 = self.space.add_collision_handler(COLLTYPE_AMMO_BOX,
+                                                             COLLTYPE_ROCKETPROJ)
+        ammo_box_handler.pre_solve = ammo_box_car_coll
+        ammo_box_handler2.pre_solve = ammo_box_bullet_coll
+        ammo_box_handler3.pre_solve = ammo_box_rocket_coll
 
         bullet_wall_handler = self.space.add_collision_handler(
             COLLTYPE_BULLETPROJ, COLLTYPE_WALL)
@@ -510,7 +535,7 @@ class Game:
             self.rl_track(pymunk.Vec2d(x, y))
 
         m_buttons = pygame.mouse.get_pressed()
-        if m_buttons[0]:  # pressed down left mouse button
+        if m_buttons[0] and self.car.wep.ammo > 0:  # pressed down left mouse button
             # attempt to shoot
             new_proj = self.car.wep.shoot()
 
