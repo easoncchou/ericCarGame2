@@ -90,8 +90,8 @@ class MachineGun(Weapon):
             self.curr_atk_cd = self.atk_cd
             self.ammo -= 1
 
-            bullet_image = pygame.surface.Surface((3, 80))
-            bullet_image.fill(BULLET_ORANGE)
+            bullet_image = pygame.image.load("assets/bullet_sprite.png")
+            bullet_image = pygame.transform.scale(bullet_image, [40, 80])
 
             return Bullet(self.damage,
                           self.pos + (pymunk.Vec2d(0, self.barrel_len / 2 + self.rot_off.y + bullet_image.get_height() / 2)).rotated(-self.a_pos),

@@ -54,7 +54,7 @@ def run_game_loop():
                        cannon_image)
 
     # add wep to car and car to game
-    car.set_weapon(wep3)
+    car.set_weapon(wep1)
     game.add_car(car, 0)
 
     # add target
@@ -81,13 +81,9 @@ def run_game_loop():
 
     # add cover walls
     cover_wall_1 = CoverWall(game.space, 0, pymunk.Vec2d(MAP_WIDTH - 300, 250), 150, 10)
-    game.add_terrain(cover_wall_1)
+    # game.add_terrain(cover_wall_1)
     cover_wall_2 = CoverWall(game.space, 0, pymunk.Vec2d(300, MAP_HEIGHT - 200), 10, 150)
-    game.add_terrain(cover_wall_2)
-
-    # add a ammo box once
-    # ammo_box_1 = AmmoBox(100, 100)
-    # game.add_ammo_box(ammo_box_1)
+    # game.add_terrain(cover_wall_2)
 
     while not done:
         # handle events

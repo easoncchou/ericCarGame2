@@ -471,7 +471,7 @@ class Game:
                 self.delete_entity(self.reticle)
                 self.car.wep.targeting_status = 0
 
-        # spawn ammo box conditionaly
+        # spawn ammo box conditionally
         self.spawn_ammo_box()
 
     def handle_input(self) -> None:
